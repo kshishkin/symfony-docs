@@ -14,7 +14,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/translation`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/Translation).
+* Use the official Git repository (https://github.com/symfony/translation).
+
+.. include:: /components/require_autoload.rst.inc
 
 Constructing the Translator
 ---------------------------
@@ -159,19 +161,19 @@ If the message is not located in the catalog of the specific locale, the
 translator will look into the catalog of one or more fallback locales. For
 example, assume you're trying to translate into the ``fr_FR`` locale:
 
-1. First, the translator looks for the translation in the ``fr_FR`` locale;
+#. First, the translator looks for the translation in the ``fr_FR`` locale;
 
-2. If it wasn't found, the translator looks for the translation in the ``fr``
+#. If it wasn't found, the translator looks for the translation in the ``fr``
    locale;
 
-3. If the translation still isn't found, the translator uses the one or more
+#. If the translation still isn't found, the translator uses the one or more
    fallback locales set explicitly on the translator.
 
 For (3), the fallback locales can be set by calling
-:method:`Symfony\\Component\\Translation\\Translator::setFallbackLocale`::
+:method:`Symfony\\Component\\Translation\\Translator::setFallbackLocales`::
 
     // ...
-    $translator->setFallbackLocale(array('en'));
+    $translator->setFallbackLocales(array('en'));
 
 .. _using-message-domains:
 
@@ -188,13 +190,13 @@ organization, translations were split into three different domains:
 loaded like this::
 
     // ...
-    $translator->addLoader('xliff', new XliffLoader());
+    $translator->addLoader('xlf', new XliffFileLoader());
 
-    $translator->addResource('xliff', 'messages.fr.xliff', 'fr_FR');
-    $translator->addResource('xliff', 'admin.fr.xliff', 'fr_FR', 'admin');
+    $translator->addResource('xlf', 'messages.fr.xlf', 'fr_FR');
+    $translator->addResource('xlf', 'admin.fr.xlf', 'fr_FR', 'admin');
     $translator->addResource(
-        'xliff',
-        'navigation.fr.xliff',
+        'xlf',
+        'navigation.fr.xlf',
         'fr_FR',
         'navigation'
     );
@@ -213,5 +215,5 @@ Usage
 Read how to use the Translation component in :doc:`/components/translation/usage`.
 
 .. _Packagist: https://packagist.org/packages/symfony/translation
-.. _`ISO 3166-1 alpha-2`: http://en.wikipedia.org/wiki/ISO_3166-1#Current_codes
-.. _`ISO 639-1`: http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+.. _`ISO 3166-1 alpha-2`: https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes
+.. _`ISO 639-1`: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes

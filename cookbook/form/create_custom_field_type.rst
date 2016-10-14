@@ -20,8 +20,8 @@ will be called ``GenderType`` and the file will be stored in the default locatio
 for form fields, which is ``<BundleName>\Form\Type``. Make sure the field extends
 :class:`Symfony\\Component\\Form\\AbstractType`::
 
-    // src/Acme/DemoBundle/Form/Type/GenderType.php
-    namespace Acme\DemoBundle\Form\Type;
+    // src/AppBundle/Form/Type/GenderType.php
+    namespace AppBundle\Form\Type;
 
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\OptionsResolver\OptionsResolverInterface;
@@ -45,7 +45,7 @@ for form fields, which is ``<BundleName>\Form\Type``. Make sure the field extend
 
         public function getName()
         {
-            return 'gender';
+            return 'app_gender';
         }
     }
 
@@ -60,20 +60,23 @@ all of the logic and rendering of that field type. To see some of the logic,
 check out the `ChoiceType`_ class. There are three methods that are particularly
 important:
 
-* ``buildForm()`` - Each field type has a ``buildForm`` method, which is where
-  you configure and build any field(s). Notice that this is the same method
-  you use to setup *your* forms, and it works the same here.
+``buildForm()``
+    Each field type has a ``buildForm`` method, which is where
+    you configure and build any field(s). Notice that this is the same method
+    you use to setup *your* forms, and it works the same here.
 
-* ``buildView()`` - This method is used to set any extra variables you'll
-  need when rendering your field in a template. For example, in `ChoiceType`_,
-  a ``multiple`` variable is set and used in the template to set (or not
-  set) the ``multiple`` attribute on the ``select`` field. See `Creating a Template for the Field`_
-  for more details.
+``buildView()``
+    This method is used to set any extra variables you'll
+    need when rendering your field in a template. For example, in `ChoiceType`_,
+    a ``multiple`` variable is set and used in the template to set (or not
+    set) the ``multiple`` attribute on the ``select`` field. See `Creating a Template for the Field`_
+    for more details.
 
-* ``setDefaultOptions()`` - This defines options for your form type that
-  can be used in ``buildForm()`` and ``buildView()``. There are a lot of
-  options common to all fields (see :doc:`/reference/forms/types/form`),
-  but you can create any others that you need here.
+``setDefaultOptions()``
+    This defines options for your form type that
+    can be used in ``buildForm()`` and ``buildView()``. There are a lot of
+    options common to all fields (see :doc:`/reference/forms/types/form`),
+    but you can create any others that you need here.
 
 .. tip::
 
@@ -106,9 +109,9 @@ link for details), create a ``gender_widget`` block to handle this:
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
-        {# src/Acme/DemoBundle/Resources/views/Form/fields.html.twig #}
+        {# app/Resources/views/form/fields.html.twig #}
         {% block gender_widget %}
             {% spaceless %}
                 {% if expanded %}
@@ -129,7 +132,7 @@ link for details), create a ``gender_widget`` block to handle this:
 
     .. code-block:: html+php
 
-        <!-- src/Acme/DemoBundle/Resources/views/Form/gender_widget.html.php -->
+        <!-- app/Resources/views/form/gender_widget.html.php -->
         <?php if ($expanded) : ?>
             <ul <?php $view['form']->block($form, 'widget_container_attributes') ?>>
             <?php foreach ($form as $child) : ?>
@@ -161,14 +164,14 @@ link for details), create a ``gender_widget`` block to handle this:
             twig:
                 form:
                     resources:
-                        - 'AcmeDemoBundle:Form:fields.html.twig'
+                        - 'form/fields.html.twig'
 
         .. code-block:: xml
 
             <!-- app/config/config.xml -->
             <twig:config>
                 <twig:form>
-                    <twig:resource>AcmeDemoBundle:Form:fields.html.twig</twig:resource>
+                    <twig:resource>form/fields.html.twig</twig:resource>
                 </twig:form>
             </twig:config>
 
@@ -178,7 +181,7 @@ link for details), create a ``gender_widget`` block to handle this:
             $container->loadFromExtension('twig', array(
                 'form' => array(
                     'resources' => array(
-                        'AcmeDemoBundle:Form:fields.html.twig',
+                        'form/fields.html.twig',
                     ),
                 ),
             ));
@@ -194,7 +197,7 @@ link for details), create a ``gender_widget`` block to handle this:
                 templating:
                     form:
                         resources:
-                            - 'AcmeDemoBundle:Form'
+                            - ':form:fields.html.php'
 
         .. code-block:: xml
 
@@ -209,7 +212,7 @@ link for details), create a ``gender_widget`` block to handle this:
                 <framework:config>
                     <framework:templating>
                         <framework:form>
-                            <framework:resource>AcmeDemoBundle:Form</twig:resource>
+                            <framework:resource>:form:fields.html.php</twig:resource>
                         </framework:form>
                     </framework:templating>
                 </framework:config>
@@ -222,7 +225,7 @@ link for details), create a ``gender_widget`` block to handle this:
                 'templating' => array(
                     'form' => array(
                         'resources' => array(
-                            'AcmeDemoBundle:Form',
+                            ':form:fields.html.php',
                         ),
                     ),
                 ),
@@ -234,8 +237,8 @@ Using the Field Type
 You can now use your custom field type immediately, simply by creating a
 new instance of the type in one of your forms::
 
-    // src/Acme/DemoBundle/Form/Type/AuthorType.php
-    namespace Acme\DemoBundle\Form\Type;
+    // src/AppBundle/Form/Type/AuthorType.php
+    namespace AppBundle\Form\Type;
 
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\FormBuilderInterface;
@@ -298,35 +301,35 @@ the ``genders`` parameter value as the first argument to its to-be-created
 
     .. code-block:: yaml
 
-        # src/Acme/DemoBundle/Resources/config/services.yml
+        # src/AppBundle/Resources/config/services.yml
         services:
-            acme_demo.form.type.gender:
-                class: Acme\DemoBundle\Form\Type\GenderType
+            app.form.type.gender:
+                class: AppBundle\Form\Type\GenderType
                 arguments:
-                    - "%genders%"
+                    - '%genders%'
                 tags:
-                    - { name: form.type, alias: gender }
+                    - { name: form.type, alias: app_gender }
 
     .. code-block:: xml
 
-        <!-- src/Acme/DemoBundle/Resources/config/services.xml -->
-        <service id="acme_demo.form.type.gender" class="Acme\DemoBundle\Form\Type\GenderType">
+        <!-- src/AppBundle/Resources/config/services.xml -->
+        <service id="app.form.type.gender" class="AppBundle\Form\Type\GenderType">
             <argument>%genders%</argument>
-            <tag name="form.type" alias="gender" />
+            <tag name="form.type" alias="app_gender" />
         </service>
 
     .. code-block:: php
 
-        // src/Acme/DemoBundle/Resources/config/services.php
+        // src/AppBundle/Resources/config/services.php
         use Symfony\Component\DependencyInjection\Definition;
 
         $container
-            ->setDefinition('acme_demo.form.type.gender', new Definition(
-                'Acme\DemoBundle\Form\Type\GenderType',
+            ->setDefinition('app.form.type.gender', new Definition(
+                'AppBundle\Form\Type\GenderType',
                 array('%genders%')
             ))
             ->addTag('form.type', array(
-                'alias' => 'gender',
+                'alias' => 'app_gender',
             ))
         ;
 
@@ -340,8 +343,8 @@ returned by the ``getName`` method defined earlier. You'll see the importance
 of this in a moment when you use the custom field type. But first, add a ``__construct``
 method to ``GenderType``, which receives the gender configuration::
 
-    // src/Acme/DemoBundle/Form/Type/GenderType.php
-    namespace Acme\DemoBundle\Form\Type;
+    // src/AppBundle/Form/Type/GenderType.php
+    namespace AppBundle\Form\Type;
 
     use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -371,8 +374,8 @@ Great! The ``GenderType`` is now fueled by the configuration parameters and
 registered as a service. Additionally, because you used the ``form.type`` alias in its
 configuration, using the field is now much easier::
 
-    // src/Acme/DemoBundle/Form/Type/AuthorType.php
-    namespace Acme\DemoBundle\Form\Type;
+    // src/AppBundle/Form/Type/AuthorType.php
+    namespace AppBundle\Form\Type;
 
     use Symfony\Component\Form\FormBuilderInterface;
 

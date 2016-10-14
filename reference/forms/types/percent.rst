@@ -18,6 +18,9 @@ This field adds a percentage sign "``%``" after the input box.
 | Options     | - `precision`_                                                        |
 |             | - `type`_                                                             |
 +-------------+-----------------------------------------------------------------------+
+| Overridden  | - `compound`_                                                         |
+| options     |                                                                       |
++-------------+-----------------------------------------------------------------------+
 | Inherited   | - `data`_                                                             |
 | options     | - `disabled`_                                                         |
 |             | - `empty_data`_                                                       |
@@ -67,14 +70,21 @@ object. The two "types" handle these two cases:
     The raw value (``55``) is shown to the user and stored on your object.
     Note that this only works for integer values.
 
+Overridden Options
+------------------
+
+.. include:: /reference/forms/types/options/compound_type.rst.inc
+
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/data.rst.inc
 
 .. include:: /reference/forms/types/options/disabled.rst.inc
+
 .. include:: /reference/forms/types/options/empty_data.rst.inc
     :end-before: DEFAULT_PLACEHOLDER
 

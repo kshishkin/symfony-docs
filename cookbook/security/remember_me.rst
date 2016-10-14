@@ -8,71 +8,151 @@ Once a user is authenticated, their credentials are typically stored in the
 session. This means that when the session ends they will be logged out and
 have to provide their login details again next time they wish to access the
 application. You can allow users to choose to stay logged in for longer than
-the session lasts using a cookie with the ``remember_me`` firewall option.
-The firewall needs to have a secret key configured, which is used to encrypt
-the cookie's content. It also has several options with default values which
-are shown here:
+the session lasts using a cookie with the ``remember_me`` firewall option:
 
 .. configuration-block::
 
     .. code-block:: yaml
 
         # app/config/security.yml
-        firewalls:
-            main:
-                remember_me:
-                    key:      "%secret%"
-                    lifetime: 31536000 # 365 days in seconds
-                    path:     /
-                    domain:   ~ # Defaults to the current domain from $_SERVER
+        security:
+            # ...
+
+            firewalls:
+                main:
+                    # ...
+                    remember_me:
+                        key:      '%secret%'
+                        lifetime: 604800 # 1 week in seconds
+                        path:     /
+                        # by default, the feature is enabled by checking a
+                        # checkbox in the login form (see below), uncomment the
+                        # following line to always enable it.
+                        #always_remember_me: true
 
     .. code-block:: xml
 
         <!-- app/config/security.xml -->
-        <config>
-            <firewall>
-                <remember-me
-                    key      = "%secret%"
-                    lifetime = "31536000" <!-- 365 days in seconds -->
-                    path     = "/"
-                    domain   = "" <!-- Defaults to the current domain from $_SERVER -->
-                />
-            </firewall>
-        </config>
+        <?xml version="1.0" encoding="utf-8" ?>
+        <srv:container xmlns="http://symfony.com/schema/dic/security"
+            xmlns:srv="http://symfony.com/schema/dic/services"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+            <config>
+                <!-- ... -->
+
+                <firewall name="main">
+                    <!-- ... -->
+
+                    <!-- 604800 is 1 week in seconds -->
+                    <remember-me
+                        key="%secret%"
+                        lifetime="604800"
+                        path="/" />
+                    <!-- by default, the feature is enabled by checking a checkbox
+                         in the login form (see below), add always-remember-me="true"
+                         to always enable it. -->
+                </firewall>
+            </config>
+        </srv:container>
 
     .. code-block:: php
 
         // app/config/security.php
         $container->loadFromExtension('security', array(
+            // ...
+
             'firewalls' => array(
                 'main' => array(
+                    // ...
                     'remember_me' => array(
                         'key'      => '%secret%',
-                        'lifetime' => 31536000, // 365 days in seconds
+                        'lifetime' => 604800, // 1 week in seconds
                         'path'     => '/',
-                        'domain'   => '', // Defaults to the current domain from $_SERVER
+                        // by default, the feature is enabled by checking a
+                        // checkbox in the login form (see below), uncomment
+                        // the following line to always enable it.
+                        //'always_remember_me' => true,
                     ),
                 ),
             ),
         ));
 
+The ``remember_me`` firewall defines the following configuration options:
+
+``key`` (**required**)
+    The value used to encrypt the cookie's content. It's common to use the
+    ``secret`` value defined in the ``app/config/parameters.yml`` file.
+
+``name`` (default value: ``REMEMBERME``)
+    The name of the cookie used to keep the user logged in. If you enable the
+    ``remember_me`` feature in several firewalls of the same application, make sure
+    to choose a different name for the cookie of each firewall. Otherwise, you'll
+    face lots of security related problems.
+
+``lifetime`` (default value: ``31536000``)
+    The number of seconds during which the user will remain logged in. By default
+    users are logged in for one year.
+
+``path`` (default value: ``/``)
+    The path where the cookie associated with this feature is used. By default
+    the cookie will be applied to the entire website but you can restrict to a
+    specific section (e.g. ``/forum``, ``/admin``).
+
+``domain`` (default value: ``null``)
+    The domain where the cookie associated with this feature is used. By default
+    cookies use the current domain obtained from ``$_SERVER``.
+
+``secure`` (default value: ``false``)
+    If ``true``, the cookie associated with this feature is sent to the user
+    through an HTTPS secure connection.
+
+``httponly`` (default value: ``true``)
+    If ``true``, the cookie associated with this feature is accessible only
+    through the HTTP protocol. This means that the cookie won't be accessible
+    by scripting languages, such as JavaScript.
+
+``remember_me_parameter`` (default value: ``_remember_me``)
+    The name of the form field checked to decide if the "Remember Me" feature
+    should be enabled or not. Keep reading this article to know how to enable
+    this feature conditionally.
+
+``always_remember_me`` (default value: ``false``)
+    If ``true``, the value of the ``remember_me_parameter`` is ignored and the
+    "Remember Me" feature is always enabled, regardless of the desire of the
+    end user.
+
+``token_provider`` (default value: ``null``)
+    Defines the service id of a token provider to use. By default, tokens are
+    stored in a cookie. For example, you might want to store the token in a
+    database, to not have a (hashed) version of the password in a cookie. The
+    DoctrineBridge comes with a
+    ``Symfony\Bridge\Doctrine\Security\RememberMe\DoctrineTokenProvider`` that
+    you can use.
+
+Forcing the User to Opt-Out of the Remember Me Feature
+------------------------------------------------------
+
 It's a good idea to provide the user with the option to use or not use the
 remember me functionality, as it will not always be appropriate. The usual
 way of doing this is to add a checkbox to the login form. By giving the checkbox
-the name ``_remember_me``, the cookie will automatically be set when the checkbox
-is checked and the user successfully logs in. So, your specific login form
-might ultimately looks like this:
+the name ``_remember_me`` (or the name you configured using ``remember_me_parameter``),
+the cookie will automatically be set when the checkbox is checked and the user
+successfully logs in. So, your specific login form might ultimately look like
+this:
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
-        {# src/Acme/SecurityBundle/Resources/views/Security/login.html.twig #}
+        {# app/Resources/views/security/login.html.twig #}
         {% if error %}
             <div>{{ error.message }}</div>
         {% endif %}
 
-        <form action="{{ path('login_check') }}" method="post">
+        <form action="{{ path('login') }}" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username" name="_username" value="{{ last_username }}" />
 
@@ -87,12 +167,12 @@ might ultimately looks like this:
 
     .. code-block:: html+php
 
-        <!-- src/Acme/SecurityBundle/Resources/views/Security/login.html.php -->
+        <!-- app/Resources/views/security/login.html.php -->
         <?php if ($error): ?>
             <div><?php echo $error->getMessage() ?></div>
-        <?php endif; ?>
+        <?php endif ?>
 
-        <form action="<?php echo $view['router']->generate('login_check') ?>" method="post">
+        <form action="<?php echo $view['router']->generate('login') ?>" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username"
                    name="_username" value="<?php echo $last_username ?>" />
@@ -109,7 +189,7 @@ might ultimately looks like this:
 The user will then automatically be logged in on subsequent visits while
 the cookie remains valid.
 
-Forcing the User to Re-authenticate before Accessing certain Resources
+Forcing the User to Re-Authenticate before Accessing certain Resources
 ----------------------------------------------------------------------
 
 When the user returns to your site, they are authenticated automatically based
@@ -126,15 +206,18 @@ The Security component provides an easy way to do this. In addition to roles
 explicitly assigned to them, users are automatically given one of the following
 roles depending on how they are authenticated:
 
-* ``IS_AUTHENTICATED_ANONYMOUSLY`` - automatically assigned to a user who is
-  in a firewall protected part of the site but who has not actually logged in.
-  This is only possible if anonymous access has been allowed.
+``IS_AUTHENTICATED_ANONYMOUSLY``
+    Automatically assigned to a user who is in a firewall protected part of the
+    site but who has not actually logged in. This is only possible if anonymous
+    access has been allowed.
 
-* ``IS_AUTHENTICATED_REMEMBERED`` - automatically assigned to a user who
-  was authenticated via a remember me cookie.
+``IS_AUTHENTICATED_REMEMBERED``
+    Automatically assigned to a user who was authenticated via a remember me
+    cookie.
 
-* ``IS_AUTHENTICATED_FULLY`` - automatically assigned to a user that has
-  provided their login details during the current session.
+``IS_AUTHENTICATED_FULLY``
+    Automatically assigned to a user that has provided their login details
+    during the current session.
 
 You can use these to control access beyond the explicitly assigned roles.
 
@@ -160,11 +243,13 @@ In the following example, the action is only allowed if the user has the
     // ...
     use Symfony\Component\Security\Core\Exception\AccessDeniedException
 
+    // ...
     public function editAction()
     {
-        if (false === $this->get('security.context')->isGranted(
-            'IS_AUTHENTICATED_FULLY'
-           )) {
+        $isFullyAuthenticated = $this->get('security.context')
+            ->isGranted('IS_AUTHENTICATED_FULLY');
+
+        if (!$isFullyAuthenticated) {
             throw new AccessDeniedException();
         }
 
@@ -172,11 +257,11 @@ In the following example, the action is only allowed if the user has the
     }
 
 You can also choose to install and use the optional JMSSecurityExtraBundle_,
-which can secure your controller using annotations:
+which can secure your controller using annotations::
 
-.. code-block:: php
-
+    // ...
     use JMS\SecurityExtraBundle\Annotation\Secure;
+    // ...
 
     /**
      * @Secure(roles="IS_AUTHENTICATED_FULLY")

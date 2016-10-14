@@ -10,7 +10,7 @@ a simple template that doesn't need any data passed into it, you can avoid
 creating the controller entirely, by using the built-in ``FrameworkBundle:Template:template``
 controller.
 
-For example, suppose you want to render a ``AcmeBundle:Static:privacy.html.twig``
+For example, suppose you want to render a ``static/privacy.html.twig``
 template, which doesn't require that any variables are passed to it. You
 can do this without creating a controller:
 
@@ -22,7 +22,7 @@ can do this without creating a controller:
             path: /privacy
             defaults:
                 _controller: FrameworkBundle:Template:template
-                template:    'AcmeBundle:Static:privacy.html.twig'
+                template:    static/privacy.html.twig
 
     .. code-block:: xml
 
@@ -34,7 +34,7 @@ can do this without creating a controller:
 
             <route id="acme_privacy" path="/privacy">
                 <default key="_controller">FrameworkBundle:Template:template</default>
-                <default key="template">AcmeBundle:Static:privacy.html.twig</default>
+                <default key="template">static/privacy.html.twig</default>
             </route>
         </routes>
 
@@ -46,7 +46,7 @@ can do this without creating a controller:
         $collection = new RouteCollection();
         $collection->add('acme_privacy', new Route('/privacy', array(
             '_controller'  => 'FrameworkBundle:Template:template',
-            'template'     => 'AcmeBundle:Static:privacy.html.twig',
+            'template'     => 'static/privacy.html.twig',
         )));
 
         return $collection;
@@ -62,14 +62,18 @@ this is probably only useful if you'd like to cache this page partial (see
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
         {{ render(url('acme_privacy')) }}
 
     .. code-block:: html+php
 
+        <?php
+        use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+        ?>
+
         <?php echo $view['actions']->render(
-            $view['router']->generate('acme_privacy', array(), true)
+            $view['router']->generate('acme_privacy', array(), UrlGeneratorInterface::ABSOLUTE_URL)
         ) ?>
 
 .. _cookbook-templating-no-controller-caching:
@@ -93,7 +97,7 @@ other variables in your route, you can control exactly how your page is cached:
             path: /privacy
             defaults:
                 _controller:  FrameworkBundle:Template:template
-                template:     'AcmeBundle:Static:privacy.html.twig'
+                template:     'static/privacy.html.twig'
                 maxAge:       86400
                 sharedAge:    86400
 
@@ -107,7 +111,7 @@ other variables in your route, you can control exactly how your page is cached:
 
             <route id="acme_privacy" path="/privacy">
                 <default key="_controller">FrameworkBundle:Template:template</default>
-                <default key="template">AcmeBundle:Static:privacy.html.twig</default>
+                <default key="template">static/privacy.html.twig</default>
                 <default key="maxAge">86400</default>
                 <default key="sharedAge">86400</default>
             </route>
@@ -121,7 +125,7 @@ other variables in your route, you can control exactly how your page is cached:
         $collection = new RouteCollection();
         $collection->add('acme_privacy', new Route('/privacy', array(
             '_controller'  => 'FrameworkBundle:Template:template',
-            'template'     => 'AcmeBundle:Static:privacy.html.twig',
+            'template'     => 'static/privacy.html.twig',
             'maxAge'       => 86400,
             'sharedAge' => 86400,
         )));

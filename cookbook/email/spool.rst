@@ -20,7 +20,7 @@ Spool Using Memory
 
 When you use spooling to store the emails to memory, they will get sent right
 before the kernel terminates. This means the email only gets sent if the whole
-request got executed without any unhandled Exception or any errors. To configure
+request got executed without any unhandled exception or any errors. To configure
 swiftmailer with the memory option, use the following configuration:
 
 .. configuration-block::
@@ -35,28 +35,37 @@ swiftmailer with the memory option, use the following configuration:
     .. code-block:: xml
 
         <!-- app/config/config.xml -->
-
-        <!--
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:swiftmailer="http://symfony.com/schema/dic/swiftmailer"
-            http://symfony.com/schema/dic/swiftmailer http://symfony.com/schema/dic/swiftmailer/swiftmailer-1.0.xsd
-        -->
+            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/swiftmailer http://symfony.com/schema/dic/swiftmailer/swiftmailer-1.0.xsd">
 
-        <swiftmailer:config>
-             <swiftmailer:spool type="memory" />
-        </swiftmailer:config>
+            <swiftmailer:config>
+                <swiftmailer:spool type="memory" />
+            </swiftmailer:config>
+        </container>
 
     .. code-block:: php
 
         // app/config/config.php
         $container->loadFromExtension('swiftmailer', array(
-             ...,
+             // ...
             'spool' => array('type' => 'memory')
         ));
 
-Spool Using a File
+.. _spool-using-a-file:
+
+Spool Using Files
 ------------------
 
-In order to use the spool with a file, use the following configuration:
+When you use the filesystem for spooling, Symfony creates a folder in the given 
+path for each mail service (e.g. "default" for the default service). This folder
+will contain files for each email in the spool. So make sure this directory is 
+writable by Symfony (or your webserver/php)!
+
+In order to use the spool with files, use the following configuration:
 
 .. configuration-block::
 
@@ -67,22 +76,25 @@ In order to use the spool with a file, use the following configuration:
             # ...
             spool:
                 type: file
-                path: /path/to/spool
+                path: /path/to/spooldir
 
     .. code-block:: xml
 
         <!-- app/config/config.xml -->
-
-        <!--
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:swiftmailer="http://symfony.com/schema/dic/swiftmailer"
-            http://symfony.com/schema/dic/swiftmailer http://symfony.com/schema/dic/swiftmailer/swiftmailer-1.0.xsd
-        -->
+            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/swiftmailer http://symfony.com/schema/dic/swiftmailer/swiftmailer-1.0.xsd">
 
-        <swiftmailer:config>
-             <swiftmailer:spool
-                 type="file"
-                 path="/path/to/spool" />
-        </swiftmailer:config>
+            <swiftmailer:config>
+                <swiftmailer:spool
+                    type="file"
+                    path="/path/to/spooldir"
+                />
+            </swiftmailer:config>
+        </container>
 
     .. code-block:: php
 
@@ -92,19 +104,19 @@ In order to use the spool with a file, use the following configuration:
 
             'spool' => array(
                 'type' => 'file',
-                'path' => '/path/to/spool',
+                'path' => '/path/to/spooldir',
             ),
         ));
 
 .. tip::
 
     If you want to store the spool somewhere with your project directory,
-    remember that you can use the `%kernel.root_dir%` parameter to reference
+    remember that you can use the ``%kernel.root_dir%`` parameter to reference
     the project's root:
 
     .. code-block:: yaml
 
-        path: "%kernel.root_dir%/spool"
+        path: '%kernel.root_dir%/spool'
 
 Now, when your app sends an email, it will not actually be sent but instead
 added to the spool. Sending the messages from the spool is done separately.

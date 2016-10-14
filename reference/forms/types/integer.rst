@@ -4,13 +4,14 @@
 integer Field Type
 ==================
 
-Renders an input "number" field. Basically, this is a text field that's good
-at handling data that's in an integer form. The input ``number`` field looks
-like a text box, except that - if the user's browser supports HTML5 - it will
-have some extra frontend functionality.
+Renders an input "number" field. Basically, this is a text field that's
+good at handling data that's in an integer form. The input ``number`` field
+looks like a text box, except that - if the user's browser supports HTML5
+- it will have some extra front-end functionality.
 
 This field has different options on how to handle input values that aren't
-integers. By default, all non-integer values (e.g. 6.78) will round down (e.g. 6).
+integers. By default, all non-integer values (e.g. 6.78) will round down
+(e.g. 6).
 
 +-------------+-----------------------------------------------------------------------+
 | Rendered as | ``input`` ``number`` field                                            |
@@ -18,6 +19,9 @@ integers. By default, all non-integer values (e.g. 6.78) will round down (e.g. 6
 | Options     | - `grouping`_                                                         |
 |             | - `precision`_                                                        |
 |             | - `rounding_mode`_                                                    |
++-------------+-----------------------------------------------------------------------+
+| Overridden  | - `compound`_                                                         |
+| options     |                                                                       |
 +-------------+-----------------------------------------------------------------------+
 | Inherited   | - `data`_                                                             |
 | options     | - `disabled`_                                                         |
@@ -50,7 +54,7 @@ rounding_mode
 **type**: ``integer`` **default**: ``IntegerToLocalizedStringTransformer::ROUND_DOWN``
 
 By default, if the user enters a non-integer number, it will be rounded
-down. There are several other rounding methods, and each is a constant
+down. There are several other rounding methods and each is a constant
 on the :class:`Symfony\\Component\\Form\\Extension\\Core\\DataTransformer\\IntegerToLocalizedStringTransformer`:
 
 *   ``IntegerToLocalizedStringTransformer::ROUND_DOWN`` Rounding mode to
@@ -65,10 +69,16 @@ on the :class:`Symfony\\Component\\Form\\Extension\\Core\\DataTransformer\\Integ
 *   ``IntegerToLocalizedStringTransformer::ROUND_CEILING`` Rounding mode
     to round towards positive infinity.
 
+Overridden Options
+------------------
+
+.. include:: /reference/forms/types/options/compound_type.rst.inc
+
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/data.rst.inc
 

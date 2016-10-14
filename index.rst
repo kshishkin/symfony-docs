@@ -45,6 +45,16 @@ Cookbook
 
 Read the :doc:`Cookbook </cookbook/index>`.
 
+Best Practices
+--------------
+
+.. toctree::
+    :hidden:
+
+    best_practices/index
+
+Read the :doc:`Official Best Practices </best_practices/index>`.
+
 Components
 ----------
 
@@ -67,29 +77,6 @@ Get answers quickly with reference documents:
 
 .. include:: /reference/map.rst.inc
 
-Bundles
--------
-
-The Symfony Standard Edition comes with some bundles. Learn more about them:
-
-.. toctree::
-    :hidden:
-
-    bundles/index
-
-.. include:: /bundles/map.rst.inc
-
-CMF
----
-
-The Symfony CMF project makes it easier for developers to add CMS functionality
-to applications built with the Symfony PHP framework.
-
-.. toctree::
-    :hidden:
-
-    cmf/index
-
 Contributing
 ------------
 
@@ -101,3 +88,15 @@ Contribute to Symfony:
     contributing/index
 
 .. include:: /contributing/map.rst.inc
+
+Create your Own Framework
+-------------------------
+
+Want to create your own framework based on Symfony?
+
+.. toctree::
+    :hidden:
+
+    create_framework/index
+
+.. include:: /create_framework/map.rst.inc

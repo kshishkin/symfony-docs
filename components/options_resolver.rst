@@ -14,7 +14,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/options-resolver`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/OptionsResolver).
+* Use the official Git repository (https://github.com/symfony/options-resolver).
+
+.. include:: /components/require_autoload.rst.inc
 
 Usage
 -----
@@ -360,7 +362,7 @@ pretend that the ``host`` should always start with ``http://``. To do that,
 you can write normalizers. These closures will be executed after all options
 are passed and should return the normalized value. You can configure these
 normalizers by calling
-:method:`Symfony\\Components\\OptionsResolver\\OptionsResolver::setNormalizers`::
+:method:`Symfony\\Component\\OptionsResolver\\OptionsResolver::setNormalizers`::
 
     // ...
     protected function setDefaultOptions(OptionsResolverInterface $resolver)

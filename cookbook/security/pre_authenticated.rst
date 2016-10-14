@@ -26,6 +26,8 @@ Enable the x509 authentication for a particular firewall in the security configu
 
         # app/config/security.yml
         security:
+            # ...
+
             firewalls:
                 secured_area:
                     pattern: ^/
@@ -34,14 +36,19 @@ Enable the x509 authentication for a particular firewall in the security configu
 
     .. code-block:: xml
 
-        <?xml version="1.0" ?>
         <!-- app/config/security.xml -->
+        <?xml version="1.0" encoding="UTF-8"?>
         <srv:container xmlns="http://symfony.com/schema/dic/security"
-            xmlns:srv="http://symfony.com/schema/dic/services">
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:srv="http://symfony.com/schema/dic/services"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd">
 
             <config>
+                <!-- ... -->
+
                 <firewall name="secured_area" pattern="^/">
-                    <x509 provider="your_user_provider"/>
+                    <x509 provider="your_user_provider" />
                 </firewall>
             </config>
         </srv:container>
@@ -50,9 +57,11 @@ Enable the x509 authentication for a particular firewall in the security configu
 
         // app/config/security.php
         $container->loadFromExtension('security', array(
+            // ...
+
             'firewalls' => array(
                 'secured_area' => array(
-                    'pattern' => '^/'
+                    'pattern' => '^/',
                     'x509'    => array(
                         'provider' => 'your_user_provider',
                     ),
@@ -71,8 +80,8 @@ in the x509 firewall configuration respectively.
     An authentication provider will only inform the user provider of the username
     that made the request. You will need to create (or use) a "user provider" that
     is referenced by the ``provider`` configuration parameter (``your_user_provider``
-    in the configuration example). This provider will turn the username into a User 
-    object of your choice. For more information on creating or configuring a user 
+    in the configuration example). This provider will turn the username into a User
+    object of your choice. For more information on creating or configuring a user
     provider, see:
 
     * :doc:`/cookbook/security/custom_provider`

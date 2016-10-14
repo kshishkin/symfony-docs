@@ -11,18 +11,20 @@ this works fine, controllers can also be specified as services.
 
 .. note::
 
-    Specifying a controller as a service takes a little bit more work. The
+    Specifying a controller as a service takes a bit more work. The
     primary advantage is that the entire controller or any services passed to
     the controller can be modified via the service container configuration.
     This is especially useful when developing an open-source bundle or any
-    bundle that will be used in many different projects.
+    bundle that will be used in different projects.
 
     A second advantage is that your controllers are more "sandboxed". By
     looking at the constructor arguments, it's easy to see what types of things
     this controller may or may not do. And because each dependency needs
     to be injected manually, it's more obvious (i.e. if you have many constructor
-    arguments) when your controller has become too big, and may need to be
-    split into multiple controllers.
+    arguments) when your controller is becoming too big. The recommendation from
+    the :doc:`best practices </best_practices/controllers>` is also valid for
+    controllers defined as services: Avoid putting your business logic into the
+    controllers. Instead, inject services that do the bulk of the work.
 
     So, even if you don't specify your controllers as services, you'll likely
     see this done in some open-source Symfony bundles. It's also important
@@ -34,8 +36,8 @@ Defining the Controller as a Service
 A controller can be defined as a service in the same way as any other class.
 For example, if you have the following simple controller::
 
-    // src/Acme/HelloBundle/Controller/HelloController.php
-    namespace Acme\HelloBundle\Controller;
+    // src/AppBundle/Controller/HelloController.php
+    namespace AppBundle\Controller;
 
     use Symfony\Component\HttpFoundation\Response;
 
@@ -53,40 +55,25 @@ Then you can define it as a service as follows:
 
     .. code-block:: yaml
 
-        # src/Acme/HelloBundle/Resources/config/services.yml
-        parameters:
-            # ...
-            acme.controller.hello.class: Acme\HelloBundle\Controller\HelloController
-
+        # app/config/services.yml
         services:
-            acme.hello.controller:
-                class: "%acme.controller.hello.class%"
+            app.hello_controller:
+                class: AppBundle\Controller\HelloController
 
     .. code-block:: xml
 
-        <!-- src/Acme/HelloBundle/Resources/config/services.xml -->
-        <parameters>
-            <!-- ... -->
-            <parameter key="acme.controller.hello.class">Acme\HelloBundle\Controller\HelloController</parameter>
-        </parameters>
-
+        <!-- app/config/services.xml -->
         <services>
-            <service id="acme.hello.controller" class="%acme.controller.hello.class%" />
+            <service id="app.hello_controller" class="AppBundle\Controller\HelloController" />
         </services>
 
     .. code-block:: php
 
-        // src/Acme/HelloBundle/Resources/config/services.php
+        // app/config/services.php
         use Symfony\Component\DependencyInjection\Definition;
 
-        // ...
-        $container->setParameter(
-            'acme.controller.hello.class',
-            'Acme\HelloBundle\Controller\HelloController'
-        );
-
-        $container->setDefinition('acme.hello.controller', new Definition(
-            '%acme.controller.hello.class%'
+        $container->setDefinition('app.hello_controller', new Definition(
+            'AppBundle\Controller\HelloController'
         ));
 
 Referring to the Service
@@ -94,9 +81,9 @@ Referring to the Service
 
 To refer to a controller that's defined as a service, use the single colon (:)
 notation. For example, to forward to the ``indexAction()`` method of the service
-defined above with the id ``acme.hello.controller``::
+defined above with the id ``app.hello_controller``::
 
-    $this->forward('acme.hello.controller:indexAction', array('name' => $name));
+    $this->forward('app.hello_controller:indexAction', array('name' => $name));
 
 .. note::
 
@@ -113,28 +100,27 @@ the route ``_controller`` value:
         # app/config/routing.yml
         hello:
             path:     /hello
-            defaults: { _controller: acme.hello.controller:indexAction }
+            defaults: { _controller: app.hello_controller:indexAction }
 
     .. code-block:: xml
 
         <!-- app/config/routing.xml -->
         <route id="hello" path="/hello">
-            <default key="_controller">acme.hello.controller:indexAction</default>
+            <default key="_controller">app.hello_controller:indexAction</default>
         </route>
 
     .. code-block:: php
 
         // app/config/routing.php
         $collection->add('hello', new Route('/hello', array(
-            '_controller' => 'acme.hello.controller:indexAction',
+            '_controller' => 'app.hello_controller:indexAction',
         )));
 
 .. tip::
 
     You can also use annotations to configure routing using a controller
-    defined as a service. See the
-    :doc:`FrameworkExtraBundle documentation </bundles/SensioFrameworkExtraBundle/annotations/routing>`
-    for details.
+    defined as a service. See the `FrameworkExtraBundle documentation`_ for
+    details.
 
 Alternatives to base Controller Methods
 ---------------------------------------
@@ -149,8 +135,8 @@ For example, if you want to render a template instead of creating the ``Response
 object directly, then your code would look like this if you were extending
 Symfony's base controller::
 
-    // src/Acme/HelloBundle/Controller/HelloController.php
-    namespace Acme\HelloBundle\Controller;
+    // src/AppBundle/Controller/HelloController.php
+    namespace AppBundle\Controller;
 
     use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -159,7 +145,7 @@ Symfony's base controller::
         public function indexAction($name)
         {
             return $this->render(
-                'AcmeHelloBundle:Hello:index.html.twig',
+                'AppBundle:Hello:index.html.twig',
                 array('name' => $name)
             );
         }
@@ -177,8 +163,8 @@ If you look at the source code for the ``render`` function in Symfony's
 In a controller that's defined as a service, you can instead inject the ``templating``
 service and use it directly::
 
-    // src/Acme/HelloBundle/Controller/HelloController.php
-    namespace Acme\HelloBundle\Controller;
+    // src/AppBundle/Controller/HelloController.php
+    namespace AppBundle\Controller;
 
     use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
     use Symfony\Component\HttpFoundation\Response;
@@ -195,7 +181,7 @@ service and use it directly::
         public function indexAction($name)
         {
             return $this->templating->renderResponse(
-                'AcmeHelloBundle:Hello:index.html.twig',
+                'AppBundle:Hello:index.html.twig',
                 array('name' => $name)
             );
         }
@@ -208,46 +194,29 @@ argument:
 
     .. code-block:: yaml
 
-        # src/Acme/HelloBundle/Resources/config/services.yml
-        parameters:
-            # ...
-            acme.controller.hello.class: Acme\HelloBundle\Controller\HelloController
-
+        # app/config/services.yml
         services:
-            acme.hello.controller:
-                class:     "%acme.controller.hello.class%"
-                arguments: ["@templating"]
+            app.hello_controller:
+                class:     AppBundle\Controller\HelloController
+                arguments: ['@templating']
 
     .. code-block:: xml
 
-        <!-- src/Acme/HelloBundle/Resources/config/services.xml -->
-        <parameters>
-            <!-- ... -->
-            <parameter
-                key="acme.controller.hello.class"
-            >Acme\HelloBundle\Controller\HelloController</parameter>
-        </parameters>
-
+        <!-- app/config/services.xml -->
         <services>
-            <service id="acme.hello.controller" class="%acme.controller.hello.class%">
+            <service id="app.hello_controller" class="AppBundle\Controller\HelloController">
                 <argument type="service" id="templating"/>
             </service>
         </services>
 
     .. code-block:: php
 
-        // src/Acme/HelloBundle/Resources/config/services.php
+        // app/config/services.php
         use Symfony\Component\DependencyInjection\Definition;
         use Symfony\Component\DependencyInjection\Reference;
 
-        // ...
-        $container->setParameter(
-            'acme.controller.hello.class',
-            'Acme\HelloBundle\Controller\HelloController'
-        );
-
-        $container->setDefinition('acme.hello.controller', new Definition(
-            '%acme.controller.hello.class%',
+        $container->setDefinition('app.hello_controller', new Definition(
+            'AppBundle\Controller\HelloController',
             array(new Reference('templating'))
         ));
 
@@ -265,5 +234,100 @@ inject *only* the exact service(s) that you need directly into the controller.
    are valid, exactly how you want to organize your reusable code is up to
    you.
 
+Base Controller Methods and Their Service Replacements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This list explains how to replace the convenience methods of the base
+controller:
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::createForm` (service: ``form.factory``)
+    .. code-block:: php
+
+        $formFactory->create($type, $data, $options);
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::createFormBuilder` (service: ``form.factory``)
+    .. code-block:: php
+
+        $formFactory->createBuilder('form', $data, $options);
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::createNotFoundException`
+    .. code-block:: php
+
+        new NotFoundHttpException($message, $previous);
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::forward` (service: ``http_kernel``)
+    .. code-block:: php
+
+        use Symfony\Component\HttpKernel\HttpKernelInterface;
+        // ...
+
+        $request = ...;
+        $attributes = array_merge($path, array('_controller' => $controller));
+        $subRequest = $request->duplicate($query, null, $attributes);
+        $httpKernel->handle($subRequest, HttpKernelInterface::SUB_REQUEST);
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::generateUrl` (service: ``router``)
+    .. code-block:: php
+
+       $router->generate($route, $params, $referenceType);
+
+    .. note::
+
+        The ``$referenceType`` argument must be one of the constants defined
+        in the :class:`Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface`.
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::getDoctrine` (service: ``doctrine``)
+    *Simply inject doctrine instead of fetching it from the container.*
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::getUser` (service: ``security.context``)
+    .. code-block:: php
+
+        $user = null;
+        $token = $securityContext->getToken();
+        if (null !== $token && is_object($token->getUser())) {
+             $user = $token->getUser();
+        }
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::isGranted` (service: ``security.context``)
+    .. code-block:: php
+
+        $securityContext->isGranted($attributes, $object);
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::redirect`
+    .. code-block:: php
+
+        use Symfony\Component\HttpFoundation\RedirectResponse;
+
+        return new RedirectResponse($url, $status);
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::render` (service: ``templating``)
+    .. code-block:: php
+
+        $templating->renderResponse($view, $parameters, $response);
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::renderView` (service: ``templating``)
+    .. code-block:: php
+
+       $templating->render($view, $parameters);
+
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller::stream` (service: ``templating``)
+    .. code-block:: php
+
+        use Symfony\Component\HttpFoundation\StreamedResponse;
+
+        $templating = $this->templating;
+        $callback = function () use ($templating, $view, $parameters) {
+            $templating->stream($view, $parameters);
+        }
+
+        return new StreamedResponse($callback);
+
+.. tip::
+
+    ``getRequest`` has been deprecated. Instead, have an argument to your
+    controller action method called ``Request $request``. The order of the
+    parameters is not important, but the typehint must be provided.
+
 .. _`Controller class source code`: https://github.com/symfony/symfony/blob/master/src/Symfony/Bundle/FrameworkBundle/Controller/Controller.php
 .. _`base Controller class`: https://github.com/symfony/symfony/blob/master/src/Symfony/Bundle/FrameworkBundle/Controller/Controller.php
+.. _`FrameworkExtraBundle documentation`: https://symfony.com/doc/current/bundles/SensioFrameworkExtraBundle/annotations/routing.html

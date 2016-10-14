@@ -16,8 +16,10 @@ Installation
 
 You can install the component in many different ways:
 
-* Use the official Git repository (https://github.com/symfony/Debug);
-* :doc:`Install it via Composer </components/using_components>` (``symfony/debug`` on `Packagist`_).
+* :doc:`Install it via Composer </components/using_components>` (``symfony/debug`` on `Packagist`_);
+* Use the official Git repository (https://github.com/symfony/debug).
+
+.. include:: /components/require_autoload.rst.inc
 
 Usage
 -----

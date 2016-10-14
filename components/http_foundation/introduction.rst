@@ -22,7 +22,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/http-foundation`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/HttpFoundation).
+* Use the official Git repository (https://github.com/symfony/http-foundation).
+
+.. include:: /components/require_autoload.rst.inc
 
 .. _component-http-foundation-request:
 
@@ -67,7 +69,7 @@ can be accessed via several public properties:
 
 * ``server``: equivalent of ``$_SERVER``;
 
-* ``headers``: mostly equivalent to a sub-set of ``$_SERVER``
+* ``headers``: mostly equivalent to a subset of ``$_SERVER``
   (``$request->headers->get('User-Agent')``).
 
 Each property is a :class:`Symfony\\Component\\HttpFoundation\\ParameterBag`
@@ -88,51 +90,51 @@ instance (or a sub-class of), which is a data holder class:
 * ``headers``: :class:`Symfony\\Component\\HttpFoundation\\HeaderBag`.
 
 All :class:`Symfony\\Component\\HttpFoundation\\ParameterBag` instances have
-methods to retrieve and update its data:
+methods to retrieve and update their data:
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::all`: Returns
-  the parameters;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::all`
+    Returns the parameters.
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::keys`: Returns
-  the parameter keys;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::keys`
+    Returns the parameter keys.
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::replace`:
-  Replaces the current parameters by a new set;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::replace`
+    Replaces the current parameters by a new set.
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::add`: Adds
-  parameters;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::add`
+    Adds parameters.
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::get`: Returns a
-  parameter by name;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::get`
+    Returns a parameter by name.
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::set`: Sets a
-  parameter by name;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::set`
+    Sets a parameter by name.
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::has`: Returns
-  ``true`` if the parameter is defined;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::has`
+    Returns ``true`` if the parameter is defined.
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::remove`: Removes
-  a parameter.
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::remove`
+    Removes a parameter.
 
 The :class:`Symfony\\Component\\HttpFoundation\\ParameterBag` instance also
 has some methods to filter the input values:
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::getAlpha`: Returns
-  the alphabetic characters of the parameter value;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::getAlpha`
+    Returns the alphabetic characters of the parameter value;
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::getAlnum`: Returns
-  the alphabetic characters and digits of the parameter value;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::getAlnum`
+    Returns the alphabetic characters and digits of the parameter value;
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::getDigits`: Returns
-  the digits of the parameter value;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::getDigits`
+    Returns the digits of the parameter value;
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::getInt`: Returns the
-  parameter value converted to integer;
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::getInt`
+    Returns the parameter value converted to integer;
 
-* :method:`Symfony\\Component\\HttpFoundation\\ParameterBag::filter`: Filters the
-  parameter by using the PHP :phpfunction:`filter_var` function.
+:method:`Symfony\\Component\\HttpFoundation\\ParameterBag::filter`
+    Filters the parameter by using the PHP :phpfunction:`filter_var` function.
 
-All getters takes up to three arguments: the first one is the parameter name
+All getters take up to three arguments: the first one is the parameter name
 and the second one is the default value to return if the parameter does not
 exist::
 
@@ -155,16 +157,16 @@ sometimes, you might want to get the value for the "original" parameter name:
 :method:`Symfony\\Component\\HttpFoundation\\Request::get` via the third
 argument::
 
-        // the query string is '?foo[bar]=bar'
+    // the query string is '?foo[bar]=bar'
 
-        $request->query->get('foo');
-        // returns array('bar' => 'bar')
+    $request->query->get('foo');
+    // returns array('bar' => 'bar')
 
-        $request->query->get('foo[bar]');
-        // returns null
+    $request->query->get('foo[bar]');
+    // returns null
 
-        $request->query->get('foo[bar]', null, true);
-        // returns 'bar'
+    $request->query->get('foo[bar]', null, true);
+    // returns 'bar'
 
 .. _component-foundation-attributes:
 
@@ -173,7 +175,7 @@ in the request, which is also an instance of
 :class:`Symfony\\Component\\HttpFoundation\\ParameterBag`. This is mostly used
 to attach information that belongs to the Request and that needs to be
 accessed from many different points in your application. For information
-on how this is used in the Symfony framework, see
+on how this is used in the Symfony Framework, see
 :ref:`the Symfony book <book-fundamentals-attributes>`.
 
 Finally, the raw data sent with the request body can be accessed using
@@ -241,14 +243,14 @@ Accessing `Accept-*` Headers Data
 You can easily access basic data extracted from ``Accept-*`` headers
 by using the following methods:
 
-* :method:`Symfony\\Component\\HttpFoundation\\Request::getAcceptableContentTypes`:
-  returns the list of accepted content types ordered by descending quality;
+:method:`Symfony\\Component\\HttpFoundation\\Request::getAcceptableContentTypes`
+    Returns the list of accepted content types ordered by descending quality.
 
-* :method:`Symfony\\Component\\HttpFoundation\\Request::getLanguages`:
-  returns the list of accepted languages ordered by descending quality;
+:method:`Symfony\\Component\\HttpFoundation\\Request::getLanguages`
+    Returns the list of accepted languages ordered by descending quality.
 
-* :method:`Symfony\\Component\\HttpFoundation\\Request::getCharsets`:
-  returns the list of accepted charsets ordered by descending quality.
+:method:`Symfony\\Component\\HttpFoundation\\Request::getCharsets`
+    Returns the list of accepted charsets ordered by descending quality.
 
 .. versionadded:: 2.2
     The :class:`Symfony\\Component\\HttpFoundation\\AcceptHeader` class was
@@ -297,7 +299,7 @@ code, and an array of HTTP headers::
         array('content-type' => 'text/html')
     );
 
-These information can also be manipulated after the Response object creation::
+This information can also be manipulated after the Response object creation::
 
     $response->setContent('Hello World');
 
@@ -400,6 +402,8 @@ To redirect the client to another URL, you can use the
 
     $response = new RedirectResponse('http://example.com/');
 
+.. _streaming-response:
+
 Streaming a Response
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -411,10 +415,10 @@ represented by a PHP callable instead of a string::
 
     $response = new StreamedResponse();
     $response->setCallback(function () {
-        echo 'Hello World';
+        var_dump('Hello World');
         flush();
         sleep(2);
-        echo 'Hello World';
+        var_dump('Hello World');
         flush();
     });
     $response->send();
@@ -426,8 +430,8 @@ represented by a PHP callable instead of a string::
     you must call ``ob_flush()`` before ``flush()``.
 
     Additionally, PHP isn't the only layer that can buffer output. Your web
-    server might also buffer based on its configuration. Even more, if you
-    use fastcgi, buffering can't be disabled at all.
+    server might also buffer based on its configuration. What's more, if you
+    use FastCGI, buffering can't be disabled at all.
 
 .. _component-http-foundation-serving-files:
 
@@ -437,7 +441,7 @@ Serving Files
 When sending a file, you must add a ``Content-Disposition`` header to your
 response. While creating this header for basic file downloads is easy, using
 non-ASCII filenames is more involving. The
-:method:`Symfony\\Component\\HttpFoundation\\Response::makeDisposition`
+:method:`Symfony\\Component\\HttpFoundation\\ResponseHeaderBag::makeDisposition`
 abstracts the hard work behind a simple API::
 
     use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -470,13 +474,28 @@ if it should::
 
     BinaryFileResponse::trustXSendfileTypeHeader();
 
-You can still set the ``Content-Type`` of the sent file, or change its ``Content-Disposition``::
+With the ``BinaryFileResponse``, you can still set the ``Content-Type`` of the sent file,
+or change its ``Content-Disposition``::
 
     $response->headers->set('Content-Type', 'text/plain');
     $response->setContentDisposition(
         ResponseHeaderBag::DISPOSITION_ATTACHMENT,
         'filename.txt'
     );
+
+.. versionadded:: 2.6
+    The ``deleteFileAfterSend()`` method was introduced in Symfony 2.6.
+
+It is possible to delete the file after the request is sent with the
+:method:`Symfony\\Component\\HttpFoundation\\BinaryFileResponse::deleteFileAfterSend` method.
+Please note that this will not work when the ``X-Sendfile`` header is set.
+
+.. note::
+
+    If you *just* created the file during this same request, the file *may* be sent
+    without any content. This may be due to cached file stats that return zero for
+    the size of the file. To fix this issue, call ``clearstatcache(false, $file)``
+    with the path to the binary file.
 
 .. _component-http-foundation-json-response:
 

@@ -22,8 +22,8 @@ The best way to understand validation is to see it in action. To start, suppose
 you've created a plain-old-PHP object that you need to use somewhere in
 your application::
 
-    // src/Acme/BlogBundle/Entity/Author.php
-    namespace Acme\BlogBundle\Entity;
+    // src/AppBundle/Entity/Author.php
+    namespace AppBundle\Entity;
 
     class Author
     {
@@ -31,7 +31,7 @@ your application::
     }
 
 So far, this is just an ordinary class that serves some purpose inside your
-application. The goal of validation is to tell you whether or not the data
+application. The goal of validation is to tell you if the data
 of an object is valid. For this to work, you'll configure a list of rules
 (called :ref:`constraints <validation-constraints>`) that the object must
 follow in order to be valid. These rules can be specified via a number of
@@ -42,17 +42,9 @@ following:
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/BlogBundle/Resources/config/validation.yml
-        Acme\BlogBundle\Entity\Author:
-            properties:
-                name:
-                    - NotBlank: ~
-
     .. code-block:: php-annotations
 
-        // src/Acme/BlogBundle/Entity/Author.php
+        // src/AppBundle/Entity/Author.php
 
         // ...
         use Symfony\Component\Validator\Constraints as Assert;
@@ -65,15 +57,23 @@ following:
             public $name;
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Author:
+            properties:
+                name:
+                    - NotBlank: ~
+
     .. code-block:: xml
 
-        <!-- src/Acme/BlogBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\BlogBundle\Entity\Author">
+            <class name="AppBundle\Entity\Author">
                 <property name="name">
                     <constraint name="NotBlank" />
                 </property>
@@ -82,7 +82,7 @@ following:
 
     .. code-block:: php
 
-        // src/Acme/BlogBundle/Entity/Author.php
+        // src/AppBundle/Entity/Author.php
 
         // ...
         use Symfony\Component\Validator\Mapping\ClassMetadata;
@@ -112,18 +112,20 @@ Using the ``validator`` Service
 Next, to actually validate an ``Author`` object, use the ``validate`` method
 on the ``validator`` service (class :class:`Symfony\\Component\\Validator\\Validator`).
 The job of the ``validator`` is easy: to read the constraints (i.e. rules)
-of a class and verify whether or not the data on the object satisfies those
+of a class and verify if the data on the object satisfies those
 constraints. If validation fails, a non-empty list of errors
 (class :class:`Symfony\\Component\\Validator\\ConstraintViolationList`) is
 returned. Take this simple example from inside a controller::
 
     // ...
     use Symfony\Component\HttpFoundation\Response;
-    use Acme\BlogBundle\Entity\Author;
+    use AppBundle\Entity\Author;
 
-    public function indexAction()
+    // ...
+    public function authorAction()
     {
         $author = new Author();
+
         // ... do something to the $author object
 
         $validator = $this->get('validator');
@@ -133,7 +135,7 @@ returned. Take this simple example from inside a controller::
             /*
              * Uses a __toString method on the $errors variable which is a
              * ConstraintViolationList object. This gives us a nice string
-             * for debugging
+             * for debugging.
              */
             $errorsString = (string) $errors;
 
@@ -148,7 +150,7 @@ message:
 
 .. code-block:: text
 
-    Acme\BlogBundle\Author.name:
+    AppBundle\Author.name:
         This value should not be blank
 
 If you insert a value into the ``name`` property, the happy success message
@@ -161,12 +163,10 @@ will appear.
     you'll use validation indirectly when handling submitted form data. For
     more information, see the :ref:`book-validation-forms`.
 
-You could also pass the collection of errors into a template.
-
-.. code-block:: php
+You could also pass the collection of errors into a template::
 
     if (count($errors) > 0) {
-        return $this->render('AcmeBlogBundle:Author:validate.html.twig', array(
+        return $this->render('author/validation.html.twig', array(
             'errors' => $errors,
         ));
     }
@@ -175,9 +175,9 @@ Inside the template, you can output the list of errors exactly as needed:
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
-        {# src/Acme/BlogBundle/Resources/views/Author/validate.html.twig #}
+        {# app/Resources/views/author/validation.html.twig #}
         <h3>The author has the following errors</h3>
         <ul>
         {% for error in errors %}
@@ -187,12 +187,12 @@ Inside the template, you can output the list of errors exactly as needed:
 
     .. code-block:: html+php
 
-        <!-- src/Acme/BlogBundle/Resources/views/Author/validate.html.php -->
+        <!-- app/Resources/views/author/validation.html.php -->
         <h3>The author has the following errors</h3>
         <ul>
         <?php foreach ($errors as $error): ?>
             <li><?php echo $error->getMessage() ?></li>
-        <?php endforeach; ?>
+        <?php endforeach ?>
         </ul>
 
 .. note::
@@ -212,15 +212,16 @@ The ``validator`` service can be used at any time to validate any object.
 In reality, however, you'll usually work with the ``validator`` indirectly
 when working with forms. Symfony's form library uses the ``validator`` service
 internally to validate the underlying object after values have been submitted.
-The constraint violations on the object are converted into ``FieldError``
+The constraint violations on the object are converted into ``FormError``
 objects that can easily be displayed with your form. The typical form submission
 workflow looks like the following from inside a controller::
 
     // ...
-    use Acme\BlogBundle\Entity\Author;
-    use Acme\BlogBundle\Form\AuthorType;
+    use AppBundle\Entity\Author;
+    use AppBundle\Form\AuthorType;
     use Symfony\Component\HttpFoundation\Request;
 
+    // ...
     public function updateAction(Request $request)
     {
         $author = new Author();
@@ -234,7 +235,7 @@ workflow looks like the following from inside a controller::
             return $this->redirect($this->generateUrl(...));
         }
 
-        return $this->render('BlogBundle:Author:form.html.twig', array(
+        return $this->render('author/form.html.twig', array(
             'form' => $form->createView(),
         ));
     }
@@ -301,15 +302,15 @@ rules). In order to validate an object, simply map one or more constraints
 to its class and then pass it to the ``validator`` service.
 
 Behind the scenes, a constraint is simply a PHP object that makes an assertive
-statement. In real life, a constraint could be: "The cake must not be burned".
+statement. In real life, a constraint could be: 'The cake must not be burned'.
 In Symfony, constraints are similar: they are assertions that a condition
-is true. Given a value, a constraint will tell you whether or not that value
+is true. Given a value, a constraint will tell you if that value
 adheres to the rules of the constraint.
 
 Supported Constraints
 ~~~~~~~~~~~~~~~~~~~~~
 
-Symfony packages a large number of the most commonly-needed constraints:
+Symfony packages many of the most commonly-needed constraints:
 
 .. include:: /reference/constraints/map.rst.inc
 
@@ -327,72 +328,84 @@ Constraint Configuration
 Some constraints, like :doc:`NotBlank </reference/constraints/NotBlank>`,
 are simple whereas others, like the :doc:`Choice </reference/constraints/Choice>`
 constraint, have several configuration options available. Suppose that the
-``Author`` class has another property, ``gender`` that can be set to either
-"male" or "female":
+``Author`` class has another property called ``gender`` that can be set to either
+"male", "female" or "other":
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/BlogBundle/Resources/config/validation.yml
-        Acme\BlogBundle\Entity\Author:
-            properties:
-                gender:
-                    - Choice: { choices: [male, female], message: Choose a valid gender. }
-
     .. code-block:: php-annotations
 
-        // src/Acme/BlogBundle/Entity/Author.php
+        // src/AppBundle/Entity/Author.php
+
+        // ...
         use Symfony\Component\Validator\Constraints as Assert;
 
         class Author
         {
             /**
              * @Assert\Choice(
-             *     choices = { "male", "female" },
+             *     choices = { "male", "female", "other" },
              *     message = "Choose a valid gender."
              * )
              */
             public $gender;
+
+            // ...
         }
+
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Author:
+            properties:
+                gender:
+                    - Choice: { choices: [male, female, other], message: Choose a valid gender. }
+                # ...
 
     .. code-block:: xml
 
-        <!-- src/Acme/BlogBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\BlogBundle\Entity\Author">
+            <class name="AppBundle\Entity\Author">
                 <property name="gender">
                     <constraint name="Choice">
                         <option name="choices">
                             <value>male</value>
                             <value>female</value>
+                            <value>other</value>
                         </option>
                         <option name="message">Choose a valid gender.</option>
                     </constraint>
                 </property>
+
+                <!-- ... -->
             </class>
         </constraint-mapping>
 
     .. code-block:: php
 
-        // src/Acme/BlogBundle/Entity/Author.php
+        // src/AppBundle/Entity/Author.php
 
         // ...
         use Symfony\Component\Validator\Mapping\ClassMetadata;
-        use Symfony\Component\Validator\Constraints\Choice;
+        use Symfony\Component\Validator\Constraints as Assert;
 
         class Author
         {
             public $gender;
 
+            // ...
+
             public static function loadValidatorMetadata(ClassMetadata $metadata)
             {
-                $metadata->addPropertyConstraint('gender', new Choice(array(
-                    'choices' => array('male', 'female'),
+                // ...
+
+                $metadata->addPropertyConstraint('gender', new Assert\Choice(array(
+                    'choices' => array('male', 'female', 'other'),
                     'message' => 'Choose a valid gender.',
                 )));
             }
@@ -407,17 +420,9 @@ options can be specified in this way.
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/BlogBundle/Resources/config/validation.yml
-        Acme\BlogBundle\Entity\Author:
-            properties:
-                gender:
-                    - Choice: [male, female]
-
     .. code-block:: php-annotations
 
-        // src/Acme/BlogBundle/Entity/Author.php
+        // src/AppBundle/Entity/Author.php
 
         // ...
         use Symfony\Component\Validator\Constraints as Assert;
@@ -425,36 +430,50 @@ options can be specified in this way.
         class Author
         {
             /**
-             * @Assert\Choice({"male", "female"})
+             * @Assert\Choice({"male", "female", "other"})
              */
             protected $gender;
+
+            // ...
         }
+
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Author:
+            properties:
+                gender:
+                    - Choice: [male, female, other]
+                # ...
 
     .. code-block:: xml
 
-        <!-- src/Acme/BlogBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\BlogBundle\Entity\Author">
+            <class name="AppBundle\Entity\Author">
                 <property name="gender">
                     <constraint name="Choice">
                         <value>male</value>
                         <value>female</value>
+                        <value>other</value>
                     </constraint>
                 </property>
+
+                <!-- ... -->
             </class>
         </constraint-mapping>
 
     .. code-block:: php
 
-        // src/Acme/BlogBundle/Entity/Author.php
+        // src/AppBundle/Entity/Author.php
 
         // ...
         use Symfony\Component\Validator\Mapping\ClassMetadata;
-        use Symfony\Component\Validator\Constraints\Choice;
+        use Symfony\Component\Validator\Constraints as Assert;
 
         class Author
         {
@@ -462,9 +481,11 @@ options can be specified in this way.
 
             public static function loadValidatorMetadata(ClassMetadata $metadata)
             {
+                // ...
+
                 $metadata->addPropertyConstraint(
                     'gender',
-                    new Choice(array('male', 'female'))
+                    new Assert\Choice(array('male', 'female', 'other'))
                 );
             }
         }
@@ -490,9 +511,11 @@ For information on translating the constraint messages, see
 Constraint Targets
 ------------------
 
-Constraints can be applied to a class property (e.g. ``name``) or a public
-getter method (e.g. ``getFullName``). The first is the most common and easy
-to use, but the second allows you to specify more complex validation rules.
+Constraints can be applied to a class property (e.g. ``name``), a public
+getter method (e.g. ``getFullName``) or an entire class. Property constraints
+are the most common and easy to use. Getter constraints allow you to specify
+more complex validation rules. Finally, class constraints are intended
+for scenarios where you want to validate a class as a whole.
 
 .. index::
    single: Validation; Property constraints
@@ -509,19 +532,9 @@ class to have at least 3 characters.
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/BlogBundle/Resources/config/validation.yml
-        Acme\BlogBundle\Entity\Author:
-            properties:
-                firstName:
-                    - NotBlank: ~
-                    - Length:
-                        min: 3
-
     .. code-block:: php-annotations
 
-        // Acme/BlogBundle/Entity/Author.php
+        // src/AppBundle/Entity/Author.php
 
         // ...
         use Symfony\Component\Validator\Constraints as Assert;
@@ -530,20 +543,30 @@ class to have at least 3 characters.
         {
             /**
              * @Assert\NotBlank()
-             * @Assert\Length(min = "3")
+             * @Assert\Length(min=3)
              */
             private $firstName;
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Author:
+            properties:
+                firstName:
+                    - NotBlank: ~
+                    - Length:
+                        min: 3
+
     .. code-block:: xml
 
-        <!-- src/Acme/BlogBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\BlogBundle\Entity\Author">
+            <class name="AppBundle\Entity\Author">
                 <property name="firstName">
                     <constraint name="NotBlank" />
                     <constraint name="Length">
@@ -555,12 +578,11 @@ class to have at least 3 characters.
 
     .. code-block:: php
 
-        // src/Acme/BlogBundle/Entity/Author.php
+        // src/AppBundle/Entity/Author.php
 
         // ...
         use Symfony\Component\Validator\Mapping\ClassMetadata;
-        use Symfony\Component\Validator\Constraints\NotBlank;
-        use Symfony\Component\Validator\Constraints\Length;
+        use Symfony\Component\Validator\Constraints as Assert;
 
         class Author
         {
@@ -568,10 +590,11 @@ class to have at least 3 characters.
 
             public static function loadValidatorMetadata(ClassMetadata $metadata)
             {
-                $metadata->addPropertyConstraint('firstName', new NotBlank());
+                $metadata->addPropertyConstraint('firstName', new Assert\NotBlank());
                 $metadata->addPropertyConstraint(
                     'firstName',
-                    new Length(array("min" => 3)));
+                    new Assert\Length(array("min" => 3))
+                );
             }
         }
 
@@ -594,17 +617,9 @@ this method must return ``true``:
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/BlogBundle/Resources/config/validation.yml
-        Acme\BlogBundle\Entity\Author:
-            getters:
-                passwordLegal:
-                    - "True": { message: "The password cannot match your first name" }
-
     .. code-block:: php-annotations
 
-        // src/Acme/BlogBundle/Entity/Author.php
+        // src/AppBundle/Entity/Author.php
 
         // ...
         use Symfony\Component\Validator\Constraints as Assert;
@@ -612,25 +627,33 @@ this method must return ``true``:
         class Author
         {
             /**
-             * @Assert\True(message = "The password cannot match your first name")
+             * @Assert\IsTrue(message = "The password cannot match your first name")
              */
             public function isPasswordLegal()
             {
-                // return true or false
+                // ... return true or false
             }
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Author:
+            getters:
+                passwordLegal:
+                    - 'IsTrue': { message: 'The password cannot match your first name' }
+
     .. code-block:: xml
 
-        <!-- src/Acme/BlogBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\BlogBundle\Entity\Author">
+            <class name="AppBundle\Entity\Author">
                 <getter property="passwordLegal">
-                    <constraint name="True">
+                    <constraint name="IsTrue">
                         <option name="message">The password cannot match your first name</option>
                     </constraint>
                 </getter>
@@ -639,27 +662,27 @@ this method must return ``true``:
 
     .. code-block:: php
 
-        // src/Acme/BlogBundle/Entity/Author.php
+        // src/AppBundle/Entity/Author.php
 
         // ...
         use Symfony\Component\Validator\Mapping\ClassMetadata;
-        use Symfony\Component\Validator\Constraints\True;
+        use Symfony\Component\Validator\Constraints as Assert;
 
         class Author
         {
             public static function loadValidatorMetadata(ClassMetadata $metadata)
             {
-                $metadata->addGetterConstraint('passwordLegal', new True(array(
+                $metadata->addGetterConstraint('passwordLegal', new Assert\IsTrue(array(
                     'message' => 'The password cannot match your first name',
                 )));
             }
         }
 
-Now, create the ``isPasswordLegal()`` method, and include the logic you need::
+Now, create the ``isPasswordLegal()`` method and include the logic you need::
 
     public function isPasswordLegal()
     {
-        return $this->firstName != $this->password;
+        return $this->firstName !== $this->password;
     }
 
 .. note::
@@ -686,8 +709,8 @@ Validation Groups
 -----------------
 
 So far, you've been able to add constraints to a class and ask whether or
-not that class passes all of the defined constraints. In some cases, however,
-you'll need to validate an object against only *some* of the constraints
+not that class passes all the defined constraints. In some cases, however,
+you'll need to validate an object against only *some* constraints
 on that class. To do this, you can organize each constraint into one or more
 "validation groups", and then apply validation against just one group of
 constraints.
@@ -697,10 +720,37 @@ user registers and when a user updates their contact information later:
 
 .. configuration-block::
 
+    .. code-block:: php-annotations
+
+        // src/AppBundle/Entity/User.php
+        namespace AppBundle\Entity;
+
+        use Symfony\Component\Security\Core\User\UserInterface;
+        use Symfony\Component\Validator\Constraints as Assert;
+
+        class User implements UserInterface
+        {
+            /**
+             * @Assert\Email(groups={"registration"})
+             */
+            private $email;
+
+            /**
+             * @Assert\NotBlank(groups={"registration"})
+             * @Assert\Length(min=7, groups={"registration"})
+             */
+            private $password;
+
+            /**
+             * @Assert\Length(min=2)
+             */
+            private $city;
+        }
+
     .. code-block:: yaml
 
-        # src/Acme/BlogBundle/Resources/config/validation.yml
-        Acme\BlogBundle\Entity\User:
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\User:
             properties:
                 email:
                     - Email: { groups: [registration] }
@@ -711,42 +761,18 @@ user registers and when a user updates their contact information later:
                     - Length:
                         min: 2
 
-    .. code-block:: php-annotations
-
-        // src/Acme/BlogBundle/Entity/User.php
-        namespace Acme\BlogBundle\Entity;
-
-        use Symfony\Component\Security\Core\User\UserInterface;
-        use Symfony\Component\Validator\Constraints as Assert;
-
-        class User implements UserInterface
-        {
-            /**
-            * @Assert\Email(groups={"registration"})
-            */
-            private $email;
-
-            /**
-            * @Assert\NotBlank(groups={"registration"})
-            * @Assert\Length(min=7, groups={"registration"})
-            */
-            private $password;
-
-            /**
-            * @Assert\Length(min = "2")
-            */
-            private $city;
-        }
-
     .. code-block:: xml
 
-        <!-- src/Acme/BlogBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+            xsi:schemaLocation="
+                http://symfony.com/schema/dic/constraint-mapping
+                http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd
+            ">
 
-            <class name="Acme\BlogBundle\Entity\User">
+            <class name="AppBundle\Entity\User">
                 <property name="email">
                     <constraint name="Email">
                         <option name="groups">
@@ -754,6 +780,7 @@ user registers and when a user updates their contact information later:
                         </option>
                     </constraint>
                 </property>
+
                 <property name="password">
                     <constraint name="NotBlank">
                         <option name="groups">
@@ -767,6 +794,7 @@ user registers and when a user updates their contact information later:
                         </option>
                     </constraint>
                 </property>
+
                 <property name="city">
                     <constraint name="Length">
                         <option name="min">7</option>
@@ -777,46 +805,76 @@ user registers and when a user updates their contact information later:
 
     .. code-block:: php
 
-        // src/Acme/BlogBundle/Entity/User.php
-        namespace Acme\BlogBundle\Entity;
+        // src/AppBundle/Entity/User.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Mapping\ClassMetadata;
-        use Symfony\Component\Validator\Constraints\Email;
-        use Symfony\Component\Validator\Constraints\NotBlank;
-        use Symfony\Component\Validator\Constraints\Length;
+        use Symfony\Component\Validator\Constraints as Assert;
 
         class User
         {
             public static function loadValidatorMetadata(ClassMetadata $metadata)
             {
-                $metadata->addPropertyConstraint('email', new Email(array(
+                $metadata->addPropertyConstraint('email', new Assert\Email(array(
                     'groups' => array('registration'),
                 )));
 
-                $metadata->addPropertyConstraint('password', new NotBlank(array(
+                $metadata->addPropertyConstraint('password', new Assert\NotBlank(array(
                     'groups' => array('registration'),
                 )));
-                $metadata->addPropertyConstraint('password', new Length(array(
-                    'min'  => 7,
-                    'groups' => array('registration')
+                $metadata->addPropertyConstraint('password', new Assert\Length(array(
+                    'min'    => 7,
+                    'groups' => array('registration'),
                 )));
 
-                $metadata->addPropertyConstraint(
-                    'city',
-                    Length(array("min" => 3)));
+                $metadata->addPropertyConstraint('city', new Assert\Length(array(
+                    "min" => 3,
+                )));
             }
         }
 
 With this configuration, there are three validation groups:
 
-* ``Default`` - contains the constraints in the current class and all
-  referenced classes that belong to no other group;
+``Default``
+    Contains the constraints in the current class and all referenced classes
+    that belong to no other group.
 
-* ``User`` - equivalent to all constraints of the ``User`` object in the
-  ``Default`` group;
+``User``
+    Equivalent to all constraints of the ``User`` object in the ``Default``
+    group. This is always the name of the class. The difference between this
+    and ``Default`` is explained below.
 
-* ``registration`` - contains the constraints on the ``email`` and ``password``
-  fields only.
+``registration``
+    Contains the constraints on the ``email`` and ``password`` fields only.
+
+Constraints in the ``Default`` group of a class are the constraints that have
+either no explicit group configured or that are configured to a group equal to
+the class name or the string ``Default``.
+
+.. caution::
+
+    When validating *just* the User object, there is no difference between the
+    ``Default`` group and the ``User`` group. But, there is a difference if
+    ``User`` has embedded objects. For example, imagine ``User`` has an
+    ``address`` property that contains some ``Address`` object and that you've
+    added the :doc:`/reference/constraints/Valid` constraint to this property
+    so that it's validated when you validate the ``User`` object.
+
+    If you validate ``User`` using the ``Default`` group, then any constraints
+    on the ``Address`` class that are in the ``Default`` group *will* be used.
+    But, if you validate ``User`` using the ``User`` validation group, then
+    only constraints on the ``Address`` class with the ``User`` group will be
+    validated.
+
+    In other words, the ``Default`` group and the class name group (e.g.
+    ``User``) are identical, except when the class is embedded in another
+    object that's actually the one being validated.
+
+    If you have inheritance (e.g. ``User extends BaseUser``) and you validate
+    with the class name of the subclass (i.e. ``User``), then all constraints
+    in the ``User`` and ``BaseUser`` will be validated. However, if you
+    validate using the base class (i.e. ``BaseUser``), then only the default
+    constraints in the ``BaseUser`` class will be validated.
 
 To tell the validator to use a specific group, pass one or more group names
 as the second argument to the ``validate()`` method::
@@ -848,28 +906,10 @@ username and the password are different only if all other validation passes
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/BlogBundle/Resources/config/validation.yml
-        Acme\BlogBundle\Entity\User:
-            group_sequence:
-                - User
-                - Strict
-            getters:
-                passwordLegal:
-                    - "True":
-                        message: "The password cannot match your username"
-                        groups: [Strict]
-            properties:
-                username:
-                    - NotBlank: ~
-                password:
-                    - NotBlank: ~
-
     .. code-block:: php-annotations
 
-        // src/Acme/BlogBundle/Entity/User.php
-        namespace Acme\BlogBundle\Entity;
+        // src/AppBundle/Entity/User.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Security\Core\User\UserInterface;
         use Symfony\Component\Validator\Constraints as Assert;
@@ -880,17 +920,17 @@ username and the password are different only if all other validation passes
         class User implements UserInterface
         {
             /**
-            * @Assert\NotBlank
-            */
+             * @Assert\NotBlank
+             */
             private $username;
 
             /**
-            * @Assert\NotBlank
-            */
+             * @Assert\NotBlank
+             */
             private $password;
 
             /**
-             * @Assert\True(message="The password cannot match your username", groups={"Strict"})
+             * @Assert\IsTrue(message="The password cannot match your username", groups={"Strict"})
              */
             public function isPasswordLegal()
             {
@@ -898,29 +938,50 @@ username and the password are different only if all other validation passes
             }
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\User:
+            group_sequence:
+                - User
+                - Strict
+            getters:
+                passwordLegal:
+                    - 'IsTrue':
+                        message: 'The password cannot match your username'
+                        groups: [Strict]
+            properties:
+                username:
+                    - NotBlank: ~
+                password:
+                    - NotBlank: ~
+
     .. code-block:: xml
 
-        <!-- src/Acme/BlogBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\BlogBundle\Entity\User">
+            <class name="AppBundle\Entity\User">
                 <property name="username">
                     <constraint name="NotBlank" />
                 </property>
+
                 <property name="password">
                     <constraint name="NotBlank" />
                 </property>
+
                 <getter property="passwordLegal">
-                    <constraint name="True">
+                    <constraint name="IsTrue">
                         <option name="message">The password cannot match your username</option>
                         <option name="groups">
                             <value>Strict</value>
                         </option>
                     </constraint>
                 </getter>
+
                 <group-sequence>
                     <value>User</value>
                     <value>Strict</value>
@@ -930,8 +991,8 @@ username and the password are different only if all other validation passes
 
     .. code-block:: php
 
-        // src/Acme/BlogBundle/Entity/User.php
-        namespace Acme\BlogBundle\Entity;
+        // src/AppBundle/Entity/User.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Mapping\ClassMetadata;
         use Symfony\Component\Validator\Constraints as Assert;
@@ -940,22 +1001,13 @@ username and the password are different only if all other validation passes
         {
             public static function loadValidatorMetadata(ClassMetadata $metadata)
             {
-                $metadata->addPropertyConstraint(
-                    'username',
-                    new Assert\NotBlank()
-                );
-                $metadata->addPropertyConstraint(
-                    'password',
-                    new Assert\NotBlank()
-                );
+                $metadata->addPropertyConstraint('username', new Assert\NotBlank());
+                $metadata->addPropertyConstraint('password', new Assert\NotBlank());
 
-                $metadata->addGetterConstraint(
-                    'passwordLegal',
-                    new Assert\True(array(
-                        'message' => 'The password cannot match your first name',
-                        'groups'  => array('Strict'),
-                    ))
-                );
+                $metadata->addGetterConstraint('passwordLegal', new Assert\IsTrue(array(
+                    'message' => 'The password cannot match your first name',
+                    'groups'  => array('Strict'),
+                )));
 
                 $metadata->setGroupSequence(array('User', 'Strict'));
             }
@@ -990,29 +1042,15 @@ entity and a new constraint group called ``Premium``:
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/DemoBundle/Resources/config/validation.yml
-        Acme\DemoBundle\Entity\User:
-            properties:
-                name:
-                    - NotBlank: ~
-                creditCard:
-                    - CardScheme:
-                        schemes: [VISA]
-                        groups: [Premium]
-
     .. code-block:: php-annotations
 
-        // src/Acme/DemoBundle/Entity/User.php
-        namespace Acme\DemoBundle\Entity;
+        // src/AppBundle/Entity/User.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Constraints as Assert;
 
         class User
         {
-            // ...
-
             /**
              * @Assert\NotBlank()
              */
@@ -1025,17 +1063,31 @@ entity and a new constraint group called ``Premium``:
              * )
              */
             private $creditCard;
+
+            // ...
         }
+
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\User:
+            properties:
+                name:
+                    - NotBlank: ~
+                creditCard:
+                    - CardScheme:
+                        schemes: [VISA]
+                        groups: [Premium]
 
     .. code-block:: xml
 
-        <!-- src/Acme/DemoBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\DemoBundle\Entity\User">
+            <class name="AppBundle\Entity\User">
                 <property name="name">
                     <constraint name="NotBlank" />
                 </property>
@@ -1050,13 +1102,15 @@ entity and a new constraint group called ``Premium``:
                         </option>
                     </constraint>
                 </property>
+
+                <!-- ... -->
             </class>
         </constraint-mapping>
 
     .. code-block:: php
 
-        // src/Acme/DemoBundle/Entity/User.php
-        namespace Acme\DemoBundle\Entity;
+        // src/AppBundle/Entity/User.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Constraints as Assert;
         use Symfony\Component\Validator\Mapping\ClassMetadata;
@@ -1082,10 +1136,10 @@ Now, change the ``User`` class to implement
 :class:`Symfony\\Component\\Validator\\GroupSequenceProviderInterface` and
 add the
 :method:`Symfony\\Component\\Validator\\GroupSequenceProviderInterface::getGroupSequence`,
-which should return an array of groups to use::
+method, which should return an array of groups to use::
 
-    // src/Acme/DemoBundle/Entity/User.php
-    namespace Acme\DemoBundle\Entity;
+    // src/AppBundle/Entity/User.php
+    namespace AppBundle\Entity;
 
     // ...
     use Symfony\Component\Validator\GroupSequenceProviderInterface;
@@ -1111,16 +1165,10 @@ provides a sequence of groups to be validated:
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/DemoBundle/Resources/config/validation.yml
-        Acme\DemoBundle\Entity\User:
-            group_sequence_provider: true
-
     .. code-block:: php-annotations
 
-        // src/Acme/DemoBundle/Entity/User.php
-        namespace Acme\DemoBundle\Entity;
+        // src/AppBundle/Entity/User.php
+        namespace AppBundle\Entity;
 
         // ...
 
@@ -1132,16 +1180,22 @@ provides a sequence of groups to be validated:
             // ...
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\User:
+            group_sequence_provider: true
+
     .. code-block:: xml
 
-        <!-- src/Acme/DemoBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
                 http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\DemoBundle\Entity\User">
+            <class name="AppBundle\Entity\User">
                 <group-sequence-provider />
                 <!-- ... -->
             </class>
@@ -1149,8 +1203,8 @@ provides a sequence of groups to be validated:
 
     .. code-block:: php
 
-        // src/Acme/DemoBundle/Entity/User.php
-        namespace Acme\DemoBundle\Entity;
+        // src/AppBundle/Entity/User.php
+        namespace AppBundle\Entity;
 
         // ...
         use Symfony\Component\Validator\Mapping\ClassMetadata;
@@ -1176,12 +1230,13 @@ just want to validate a simple value - like to verify that a string is a valid
 email address. This is actually pretty easy to do. From inside a controller,
 it looks like this::
 
-    use Symfony\Component\Validator\Constraints\Email;
     // ...
+    use Symfony\Component\Validator\Constraints as Assert;
 
+    // ...
     public function addEmailAction($email)
     {
-        $emailConstraint = new Email();
+        $emailConstraint = new Assert\Email();
         // all constraint "options" can be set this way
         $emailConstraint->message = 'Invalid email address';
 
@@ -1191,8 +1246,8 @@ it looks like this::
             $emailConstraint
         );
 
-        if (count($errorList) == 0) {
-            // this IS a valid email address, do something
+        if (0 === count($errorList)) {
+            // ... this IS a valid email address, do something
         } else {
             // this is *not* a valid email address
             $errorMessage = $errorList[0]->getMessage();
@@ -1207,7 +1262,7 @@ By calling ``validateValue`` on the validator, you can pass in a raw value and
 the constraint object that you want to validate that value against. A full
 list of the available constraints - as well as the full class name for each
 constraint - is available in the :doc:`constraints reference </reference/constraints>`
-section .
+section.
 
 The ``validateValue`` method returns a :class:`Symfony\\Component\\Validator\\ConstraintViolationList`
 object, which acts just like an array of errors. Each error in the collection
@@ -1229,5 +1284,5 @@ Learn more from the Cookbook
 
 * :doc:`/cookbook/validation/custom_constraint`
 
-.. _Validator: https://github.com/symfony/Validator
+.. _Validator: https://github.com/symfony/validator
 .. _JSR303 Bean Validation specification: http://jcp.org/en/jsr/detail?id=303

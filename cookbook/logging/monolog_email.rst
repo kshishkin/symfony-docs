@@ -7,7 +7,7 @@ How to Configure Monolog to Email Errors
 Monolog_ can be configured to send an email when an error occurs with an
 application. The configuration for this requires a few nested handlers
 in order to avoid receiving too many emails. This configuration looks
-complicated at first but each handler is fairly straight forward when
+complicated at first but each handler is fairly straightforward when
 it is broken down.
 
 .. configuration-block::
@@ -19,23 +19,29 @@ it is broken down.
             handlers:
                 mail:
                     type:         fingers_crossed
+                    # 500 errors are logged at the critical level
                     action_level: critical
+                    # to also log 400 level errors (but not 404's):
+                    # action_level: error
+                    # excluded_404s:
+                    #     - ^/
                     handler:      buffered
                 buffered:
                     type:    buffer
                     handler: swift
                 swift:
                     type:       swift_mailer
-                    from_email: error@example.com
-                    to_email:   error@example.com
+                    from_email: 'error@example.com'
+                    to_email:   'error@example.com'
                     # or list of recipients
-                    # to_email:   [dev1@example.com, dev2@example.com, ...]
+                    # to_email:   ['dev1@example.com', 'dev2@example.com', ...]
                     subject:    An Error Occurred!
                     level:      debug
 
     .. code-block:: xml
 
         <!-- app/config/config_prod.xml -->
+        <?xml version="1.0" encoding="UTF-8" ?>
         <container xmlns="http://symfony.com/schema/dic/services"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:monolog="http://symfony.com/schema/dic/monolog"
@@ -43,6 +49,12 @@ it is broken down.
                                 http://symfony.com/schema/dic/monolog http://symfony.com/schema/dic/monolog/monolog-1.0.xsd">
 
             <monolog:config>
+                <!--
+                To also log 400 level errors (but not 404's):
+                action-level="error"
+                And add this child inside this monolog:handler
+                <monolog:excluded-404>^/</monolog:excluded-404>
+                -->
                 <monolog:handler
                     name="mail"
                     type="fingers_crossed"
@@ -81,6 +93,11 @@ it is broken down.
                 'mail' => array(
                     'type'         => 'fingers_crossed',
                     'action_level' => 'critical',
+                    // to also log 400 level errors (but not 404's):
+                    // 'action_level' => 'error',
+                    // 'excluded_404s' => array(
+                    //     '^/',
+                    // ),
                     'handler'      => 'buffered',
                 ),
                 'buffered' => array(
@@ -101,14 +118,16 @@ it is broken down.
 
 The ``mail`` handler is a ``fingers_crossed`` handler which means that
 it is only triggered when the action level, in this case ``critical`` is reached.
-It then logs everything including messages below the action level. The
-``critical`` level is only triggered for 5xx HTTP code errors. The ``handler``
-setting means that the output is then passed onto the ``buffered`` handler.
+The ``critical`` level is only triggered for 5xx HTTP code errors. If this level
+is reached once, the ``fingers_crossed`` handler will log all messages
+regardless of their level. The ``handler`` setting means that the output
+is then passed onto the ``buffered`` handler.
 
 .. tip::
 
     If you want both 400 level and 500 level errors to trigger an email,
-    set the ``action_level`` to ``error`` instead of ``critical``.
+    set the ``action_level`` to ``error`` instead of ``critical``. See the
+    code above for an example.
 
 The ``buffered`` handler simply keeps all the messages for a request and
 then passes them onto the nested handler in one go. If you do not use this
@@ -144,15 +163,15 @@ get logged on the server as well as the emails being sent:
                     members: [streamed, buffered]
                 streamed:
                     type:  stream
-                    path:  "%kernel.logs_dir%/%kernel.environment%.log"
+                    path:  '%kernel.logs_dir%/%kernel.environment%.log'
                     level: debug
                 buffered:
                     type:    buffer
                     handler: swift
                 swift:
                     type:       swift_mailer
-                    from_email: error@example.com
-                    to_email:   error@example.com
+                    from_email: 'error@example.com'
+                    to_email:   'error@example.com'
                     subject:    An Error Occurred!
                     level:      debug
 

@@ -9,9 +9,12 @@ The ``file`` type represents a file input in your form.
 +-------------+---------------------------------------------------------------------+
 | Rendered as | ``input`` ``file`` field                                            |
 +-------------+---------------------------------------------------------------------+
+| Overridden  | - `compound`_                                                       |
+| options     | - `data_class`_                                                     |
+|             | - `empty_data`_                                                     |
++-------------+---------------------------------------------------------------------+
 | Inherited   | - `disabled`_                                                       |
-| options     | - `empty_data`_                                                     |
-|             | - `error_bubbling`_                                                 |
+| options     | - `error_bubbling`_                                                 |
 |             | - `error_mapping`_                                                  |
 |             | - `label`_                                                          |
 |             | - `label_attr`_                                                     |
@@ -27,17 +30,13 @@ The ``file`` type represents a file input in your form.
 Basic Usage
 -----------
 
-Say you have this form definition:
-
-.. code-block:: php
+Say you have this form definition::
 
     $builder->add('attachment', 'file');
 
-When the form is submitted, the ``attachment`` field will be an instance of
-:class:`Symfony\\Component\\HttpFoundation\\File\\UploadedFile`. It can be
-used to move the ``attachment`` file to a permanent location:
-
-.. code-block:: php
+When the form is submitted, the ``attachment`` field will be an instance
+of :class:`Symfony\\Component\\HttpFoundation\\File\\UploadedFile`. It can
+be used to move the ``attachment`` file to a permanent location::
 
     use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -75,23 +74,36 @@ could have been manipulated by the end-user. Moreover, it can contain
 characters that are not allowed in file names. You should sanitize the name
 before using it directly.
 
-Read the :doc:`cookbook </cookbook/doctrine/file_uploads>` for an example of
-how to manage a file upload associated with a Doctrine entity.
+Read the :doc:`cookbook </cookbook/controller/upload_file>` for an example
+of how to manage a file upload associated with a Doctrine entity.
+
+Overridden Options
+------------------
+
+.. include:: /reference/forms/types/options/compound_type.rst.inc
+
+data_class
+~~~~~~~~~~
+
+**type**: ``string`` **default**: :class:`Symfony\\Component\\HttpFoundation\\File\\File`
+
+This option sets the appropriate file-related data mapper to be used by the type.
+
+empty_data
+~~~~~~~~~~
+
+**type**: ``mixed`` **default**: ``null``
+
+This option determines what value the field will return when the submitted
+value is empty.
 
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/disabled.rst.inc
-
-.. include:: /reference/forms/types/options/empty_data.rst.inc
-    :end-before: DEFAULT_PLACEHOLDER
-
-The default value is ``null``.
-
-.. include:: /reference/forms/types/options/empty_data.rst.inc
-    :start-after: DEFAULT_PLACEHOLDER
 
 .. include:: /reference/forms/types/options/error_bubbling.rst.inc
 
@@ -110,8 +122,8 @@ The default value is ``null``.
 Form Variables
 --------------
 
-======== ========== ===============================================================================
-Variable Type       Usage
-======== ========== ===============================================================================
-type     ``string`` The type variable is set to ``file``, in order to render as a file input field.
-======== ========== ===============================================================================
+========  ==========  ===============================================================================
+Variable  Type        Usage
+========  ==========  ===============================================================================
+type      ``string``  The type variable is set to ``file``, in order to render as a file input field.
+========  ==========  ===============================================================================

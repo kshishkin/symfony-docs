@@ -7,8 +7,8 @@ datetime Field Type
 This field type allows the user to modify data that represents a specific
 date and time (e.g. ``1984-06-05 12:15:30``).
 
-Can be rendered as a text input or select tags. The underlying format of the
-data can be a ``DateTime`` object, a string, a timestamp or an array.
+Can be rendered as a text input or select tags. The underlying format of
+the data can be a ``DateTime`` object, a string, a timestamp or an array.
 
 +----------------------+-----------------------------------------------------------------------------+
 | Underlying Data Type | can be ``DateTime``, string, timestamp, or array (see the ``input`` option) |
@@ -32,6 +32,11 @@ data can be a ``DateTime`` object, a string, a timestamp or an array.
 |                      | - `with_minutes`_                                                           |
 |                      | - `with_seconds`_                                                           |
 |                      | - `years`_                                                                  |
++----------------------+-----------------------------------------------------------------------------+
+| Overridden options   | - `by_reference`_                                                           |
+|                      | - `compound`_                                                               |
+|                      | - `data_class`_                                                             |
+|                      | - `error_bubbling`_                                                         |
 +----------------------+-----------------------------------------------------------------------------+
 | Inherited            | - `data`_                                                                   |
 | options              | - `disabled`_                                                               |
@@ -61,9 +66,7 @@ for more details.
 date_widget
 ~~~~~~~~~~~
 
-**type**: ``string`` **default**: ``choice``
-
-Defines the ``widget`` option for the :doc:`date </reference/forms/types/date>` type
+.. include:: /reference/forms/types/options/date_widget_description.rst.inc
 
 .. include:: /reference/forms/types/options/days.rst.inc
 
@@ -87,8 +90,8 @@ input
 
 **type**: ``string`` **default**: ``datetime``
 
-The format of the *input* data - i.e. the format that the date is stored on
-your underlying object. Valid values are:
+The format of the *input* data - i.e. the format that the date is stored
+on your underlying object. Valid values are:
 
 * ``string`` (e.g. ``2011-06-05 12:15:00``)
 * ``datetime`` (a ``DateTime`` object)
@@ -113,7 +116,8 @@ time_widget
 
 **type**: ``string`` **default**: ``choice``
 
-Defines the ``widget`` option for the :doc:`time </reference/forms/types/time>` type
+Defines the ``widget`` option for the :doc:`time </reference/forms/types/time>`
+type
 
 .. include:: /reference/forms/types/options/view_timezone.rst.inc
 
@@ -123,8 +127,8 @@ widget
 **type**: ``string`` **default**: ``null``
 
 Defines the ``widget`` option for both the :doc:`date </reference/forms/types/date>`
-type and :doc:`time </reference/forms/types/time>` type. This can be overridden with
-the `date_widget`_ and `time_widget`_ options.
+type and :doc:`time </reference/forms/types/time>` type. This can be overridden
+with the `date_widget`_ and `time_widget`_ options.
 
 .. include:: /reference/forms/types/options/with_minutes.rst.inc
 
@@ -132,10 +136,30 @@ the `date_widget`_ and `time_widget`_ options.
 
 .. include:: /reference/forms/types/options/years.rst.inc
 
+Overridden Options
+------------------
+
+by_reference
+~~~~~~~~~~~~
+
+**default**: ``false``
+
+The ``DateTime`` classes are treated as immutable objects.
+
+.. include:: /reference/forms/types/options/compound_type.rst.inc
+
+.. include:: /reference/forms/types/options/data_class_date.rst.inc
+
+error_bubbling
+~~~~~~~~~~~~~~
+
+**default**: ``false``
+
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/data.rst.inc
 

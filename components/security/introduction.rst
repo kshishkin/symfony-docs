@@ -17,7 +17,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/security`` on Packagist_);
-* Use the official Git repository (https://github.com/symfony/Security).
+* Use the official Git repository (https://github.com/symfony/security).
+
+.. include:: /components/require_autoload.rst.inc
 
 Sections
 --------
@@ -25,5 +27,6 @@ Sections
 * :doc:`/components/security/firewall`
 * :doc:`/components/security/authentication`
 * :doc:`/components/security/authorization`
+* :doc:`/components/security/secure_tools`
 
 .. _Packagist: https://packagist.org/packages/symfony/security

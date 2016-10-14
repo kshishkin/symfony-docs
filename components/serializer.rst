@@ -31,7 +31,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/serializer`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/Serializer).
+* Use the official Git repository (https://github.com/symfony/serializer).
+
+.. include:: /components/require_autoload.rst.inc
 
 Usage
 -----
@@ -139,14 +141,14 @@ of the ``Person`` class would be encoded in XML format::
     </person>
     EOF;
 
-    $person = $serializer->deserialize($data,'Acme\Person','xml');
+    $person = $serializer->deserialize($data, 'Acme\Person', 'xml');
 
 In this case, :method:`Symfony\\Component\\Serializer\\Serializer::deserialize`
 needs three parameters:
 
-1. The information to be decoded
-2. The name of the class this information will be decoded to
-3. The encoder used to convert that information into an array
+#. The information to be decoded
+#. The name of the class this information will be decoded to
+#. The encoder used to convert that information into an array
 
 Using Camelized Method Names for Underscored Attributes
 -------------------------------------------------------
@@ -198,7 +200,7 @@ When serializing, you can set a callback to format a specific object property::
         return $dateTime instanceof \DateTime
             ? $dateTime->format(\DateTime::ISO8601)
             : '';
-    }
+    };
 
     $normalizer->setCallbacks(array('createdAt' => $callback));
 

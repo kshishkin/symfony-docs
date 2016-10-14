@@ -18,18 +18,10 @@ Basic Usage
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/UserBundle/Resources/config/validation.yml
-        Acme\UserBundle\Entity\User:
-            properties:
-                country:
-                    - Country: ~
-
     .. code-block:: php-annotations
 
-        // src/Acme/UserBundle/Entity/User.php
-        namespace Acme\UserBundle\Entity;
+        // src/AppBundle/Entity/User.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Constraints as Assert;
 
@@ -41,15 +33,23 @@ Basic Usage
              protected $country;
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\User:
+            properties:
+                country:
+                    - Country: ~
+
     .. code-block:: xml
 
-        <!-- src/Acme/UserBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\UserBundle\Entity\User">
+            <class name="AppBundle\Entity\User">
                 <property name="country">
                     <constraint name="Country" />
                 </property>
@@ -58,8 +58,8 @@ Basic Usage
 
     .. code-block:: php
 
-        // src/Acme/UserBundle/Entity/User.php
-        namespace Acme\UserBundle\Entity;
+        // src/AppBundle/Entity/User.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Mapping\ClassMetadata;
         use Symfony\Component\Validator\Constraints as Assert;
@@ -82,4 +82,4 @@ message
 
 This message is shown if the string is not a valid country code.
 
-.. _`ISO 3166-1 alpha-2`: http://en.wikipedia.org/wiki/ISO_3166-1#Current_codes
+.. _`ISO 3166-1 alpha-2`: https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes

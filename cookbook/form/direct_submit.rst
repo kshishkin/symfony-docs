@@ -28,7 +28,7 @@ submissions::
             return $this->redirect($this->generateUrl('task_success'));
         }
 
-        return $this->render('AcmeTaskBundle:Default:new.html.twig', array(
+        return $this->render('AppBundle:Default:new.html.twig', array(
             'form' => $form->createView(),
         ));
     }
@@ -36,6 +36,8 @@ submissions::
 .. tip::
 
     To see more about this method, read :ref:`book-form-handling-form-submissions`.
+
+.. _cookbook-form-call-submit-directly:
 
 Calling Form::submit() manually
 -------------------------------
@@ -68,7 +70,7 @@ method, pass the submitted data directly to
             }
         }
 
-        return $this->render('AcmeTaskBundle:Default:new.html.twig', array(
+        return $this->render('AppBundle:Default:new.html.twig', array(
             'form' => $form->createView(),
         ));
     }
@@ -81,6 +83,13 @@ method, pass the submitted data directly to
     directly on the field::
 
         $form->get('firstName')->submit('Fabien');
+
+.. tip::
+
+    When submitting a form via a "PATCH" request, you may want to update only a few
+    submitted fields. To achieve this, you may pass an optional second boolean
+    parameter to ``submit()``. Passing ``false`` will remove any missing fields
+    within the form object. Otherwise, the mising fields will be set to ``null``.
 
 .. _cookbook-form-submit-request:
 
@@ -113,7 +122,7 @@ a convenient shortcut to the previous example::
             }
         }
 
-        return $this->render('AcmeTaskBundle:Default:new.html.twig', array(
+        return $this->render('AppBundle:Default:new.html.twig', array(
             'form' => $form->createView(),
         ));
     }

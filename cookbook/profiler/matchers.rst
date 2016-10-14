@@ -4,20 +4,20 @@
 How to Use Matchers to Enable the Profiler Conditionally
 ========================================================
 
-By default, the profiler is only activated in the development environment. But
-it's imaginable that a developer may want to see the profiler even in
-production. Another situation may be that you want to show the profiler only
-when an admin has logged in. You can enable the profiler in these situations
-by using matchers.
+The Symfony profiler is only activated in the development environment to not hurt
+your application performance. However, sometimes it may be useful to conditionally
+enable the profiler in the production environment to assist you in debugging
+issues. This behavior is implemented with the **Request Matchers**.
 
 Using the built-in Matcher
 --------------------------
 
-Symfony provides a
+A request matcher is a class that checks whether a given ``Request`` instance
+matches a set of conditions. Symfony provides a
 :class:`built-in matcher <Symfony\\Component\\HttpFoundation\\RequestMatcher>`
-which can match paths and IPs. For example, if you want to only show the
-profiler when accessing the page with the ``168.0.0.1`` IP, then you can
-use this configuration:
+which matches paths and IPs. For example, if you want to only show the profiler
+when accessing the page with the ``168.0.0.1`` IP, then you can use this
+configuration:
 
 .. configuration-block::
 
@@ -33,16 +33,27 @@ use this configuration:
     .. code-block:: xml
 
         <!-- app/config/config.xml -->
-        <framework:config>
-            <framework:profiler
-                ip="168.0.0.1"
-            />
-        </framework:config>
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:framework="http://symfony.com/schema/dic/symfony"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-Instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/symfony
+                http://symfony.com/schema/dic/symfony/symfony-1.0.xsd"
+        >
+
+            <framework:config>
+                <!-- ... -->
+                <framework:profiler ip="168.0.0.1" />
+            </framework:config>
+        </container>
 
     .. code-block:: php
 
         // app/config/config.php
         $container->loadFromExtension('framework', array(
+            // ...
             'profiler' => array(
                 'ip' => '168.0.0.1',
             ),
@@ -50,25 +61,27 @@ use this configuration:
 
 You can also set a ``path`` option to define the path on which the profiler
 should be enabled. For instance, setting it to ``^/admin/`` will enable the
-profiler only for the ``/admin/`` URLs.
+profiler only for the URLs which start with ``/admin/``.
 
-Creating a custom Matcher
+Creating a Custom Matcher
 -------------------------
 
-You can also create a custom matcher. This is a service that checks whether
-the profiler should be enabled or not. To create that service, create a class
+Leveraging the concept of Request Matchers you can define a custom matcher to
+enable the profiler conditionally in your application. To do so, create a class
 which implements
 :class:`Symfony\\Component\\HttpFoundation\\RequestMatcherInterface`. This
 interface requires one method:
 :method:`Symfony\\Component\\HttpFoundation\\RequestMatcherInterface::matches`.
-This method returns false to disable the profiler and true to enable the
-profiler.
+This method returns ``false`` when the request doesn't match the conditions and
+``true`` otherwise. Therefore, the custom matcher must return ``false`` to
+disable the profiler and ``true`` to enable it.
 
-To enable the profiler when a ``ROLE_SUPER_ADMIN`` is logged in, you can use
-something like::
+Suppose that the profiler must be enabled whenever a user with a
+``ROLE_SUPER_ADMIN`` is logged in. This is the only code needed for that custom
+matcher::
 
-    // src/Acme/DemoBundle/Profiler/SuperAdminMatcher.php
-    namespace Acme\DemoBundle\Profiler;
+    // src/AppBundle/Profiler/SuperAdminMatcher.php
+    namespace AppBundle\Profiler;
 
     use Symfony\Component\Security\Core\SecurityContext;
     use Symfony\Component\HttpFoundation\Request;
@@ -89,50 +102,44 @@ something like::
         }
     }
 
-Then, you need to configure the service:
+Then, configure a new service and set it as ``private`` because the application
+won't use it directly:
 
 .. configuration-block::
 
     .. code-block:: yaml
 
-        parameters:
-            acme_demo.profiler.matcher.super_admin.class: Acme\DemoBundle\Profiler\SuperAdminMatcher
-
+        # app/config/services.yml
         services:
-            acme_demo.profiler.matcher.super_admin:
-                class: "%acme_demo.profiler.matcher.super_admin.class%"
-                arguments: ["@security.context"]
+            app.super_admin_matcher:
+                class: AppBundle\Profiler\SuperAdminMatcher
+                arguments: ['@security.context']
+                public: false
 
     .. code-block:: xml
 
-        <parameters>
-            <parameter
-                key="acme_demo.profiler.matcher.super_admin.class"
-            >Acme\DemoBundle\Profiler\SuperAdminMatcher</parameter>
-        </parameters>
-
+        <!-- app/config/services.xml -->
         <services>
-            <service id="acme_demo.profiler.matcher.super_admin"
-                class="%acme_demo.profiler.matcher.super_admin.class%">
+            <service id="app.super_admin_matcher"
+                class="AppBundle\Profiler\SuperAdminMatcher" public="false">
                 <argument type="service" id="security.context" />
         </services>
 
     .. code-block:: php
 
+        // app/config/services.php
         use Symfony\Component\DependencyInjection\Definition;
         use Symfony\Component\DependencyInjection\Reference;
 
-        $container->setParameter(
-            'acme_demo.profiler.matcher.super_admin.class',
-            'Acme\DemoBundle\Profiler\SuperAdminMatcher'
-        );
-
-        $container->setDefinition('acme_demo.profiler.matcher.super_admin', new Definition(
-            '%acme_demo.profiler.matcher.super_admin.class%',
+        $definition = new Definition(
+            'AppBundle\Profiler\SuperAdminMatcher',
             array(new Reference('security.context'))
         );
+        $definition->setPublic(false);
 
-Now the service is registered, the only thing left to do is configure the
+        $container->setDefinition('app.super_admin_matcher', $definition);
+
+Once the service is registered, the only thing left to do is configure the
 profiler to use this service as the matcher:
 
 .. configuration-block::
@@ -144,17 +151,26 @@ profiler to use this service as the matcher:
             # ...
             profiler:
                 matcher:
-                    service: acme_demo.profiler.matcher.super_admin
+                    service: app.super_admin_matcher
 
     .. code-block:: xml
 
         <!-- app/config/config.xml -->
-        <framework:config>
-            <!-- ... -->
-            <framework:profiler
-                service="acme_demo.profiler.matcher.super_admin"
-            />
-        </framework:config>
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:framework="http://symfony.com/schema/dic/symfony"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-Instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/symfony
+                http://symfony.com/schema/dic/symfony/symfony-1.0.xsd"
+        >
+
+            <framework:config>
+                <!-- ... -->
+                <framework:profiler service="app.super_admin_matcher" />
+            </framework:config>
+        </container>
 
     .. code-block:: php
 
@@ -162,6 +178,6 @@ profiler to use this service as the matcher:
         $container->loadFromExtension('framework', array(
             // ...
             'profiler' => array(
-                'service' => 'acme_demo.profiler.matcher.super_admin',
+                'service' => 'app.super_admin_matcher',
             ),
         ));

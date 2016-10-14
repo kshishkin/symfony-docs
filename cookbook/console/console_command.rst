@@ -6,7 +6,7 @@ How to Create a Console Command
 
 The Console page of the Components section (:doc:`/components/console/introduction`) covers
 how to create a console command. This cookbook article covers the differences
-when creating console commands within the Symfony framework.
+when creating console commands within the Symfony Framework.
 
 Automatically Registering Commands
 ----------------------------------
@@ -14,11 +14,11 @@ Automatically Registering Commands
 To make the console commands available automatically with Symfony, create a
 ``Command`` directory inside your bundle and create a PHP file suffixed with
 ``Command.php`` for each command that you want to provide. For example, if you
-want to extend the AcmeDemoBundle to greet you from the command line, create
+want to extend the AppBundle to greet you from the command line, create
 ``GreetCommand.php`` and add the following to it::
 
-    // src/Acme/DemoBundle/Command/GreetCommand.php
-    namespace Acme\DemoBundle\Command;
+    // src/AppBundle/Command/GreetCommand.php
+    namespace AppBundle\Command;
 
     use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
     use Symfony\Component\Console\Input\InputArgument;
@@ -33,8 +33,17 @@ want to extend the AcmeDemoBundle to greet you from the command line, create
             $this
                 ->setName('demo:greet')
                 ->setDescription('Greet someone')
-                ->addArgument('name', InputArgument::OPTIONAL, 'Who do you want to greet?')
-                ->addOption('yell', null, InputOption::VALUE_NONE, 'If set, the task will yell in uppercase letters')
+                ->addArgument(
+                    'name',
+                    InputArgument::OPTIONAL,
+                    'Who do you want to greet?'
+                )
+                ->addOption(
+                    'yell',
+                    null,
+                    InputOption::VALUE_NONE,
+                    'If set, the task will yell in uppercase letters'
+                )
             ;
         }
 
@@ -59,7 +68,7 @@ This command will now automatically be available to run:
 
 .. code-block:: bash
 
-    $ app/console demo:greet Fabien
+    $ php app/console demo:greet Fabien
 
 Getting Services from the Service Container
 -------------------------------------------
@@ -78,7 +87,7 @@ service container. In other words, you have access to any configured service::
         // ...
     }
 
-However, due to the `container scopes </cookbook/service_container/scopes>`_ this
+However, due to the :doc:`container scopes </cookbook/service_container/scopes>` this
 code doesn't work for some services. For instance, if you try to get the ``request``
 service or any other service related to it, you'll get the following error:
 
@@ -94,7 +103,9 @@ translate some contents using a console command::
         $name = $input->getArgument('name');
         $translator = $this->getContainer()->get('translator');
         if ($name) {
-            $output->writeln($translator->trans('Hello %name%!', array('%name%' => $name)));
+            $output->writeln(
+                $translator->trans('Hello %name%!', array('%name%' => $name))
+            );
         } else {
             $output->writeln($translator->trans('Hello!'));
         }
@@ -128,26 +139,34 @@ before translating contents::
         $translator->setLocale($locale);
 
         if ($name) {
-            $output->writeln($translator->trans('Hello %name%!', array('%name%' => $name)));
+            $output->writeln(
+                $translator->trans('Hello %name%!', array('%name%' => $name))
+            );
         } else {
             $output->writeln($translator->trans('Hello!'));
         }
     }
 
-However for other services the solution might be more complex. For more details,
+However, for other services the solution might be more complex. For more details,
 see :doc:`/cookbook/service_container/scopes`.
+
+Invoking other Commands
+-----------------------
+
+See :ref:`calling-existing-command` if you need to implement a command that runs
+other dependent commands.
 
 Testing Commands
 ----------------
 
-When testing commands used as part of the full framework
-:class:`Symfony\\Bundle\\FrameworkBundle\\Console\\Application <Symfony\\Bundle\\FrameworkBundle\\Console\\Application>` should be used
-instead of
+When testing commands used as part of the full-stack framework,
+:class:`Symfony\\Bundle\\FrameworkBundle\\Console\\Application <Symfony\\Bundle\\FrameworkBundle\\Console\\Application>`
+should be used instead of
 :class:`Symfony\\Component\\Console\\Application <Symfony\\Component\\Console\\Application>`::
 
     use Symfony\Component\Console\Tester\CommandTester;
     use Symfony\Bundle\FrameworkBundle\Console\Application;
-    use Acme\DemoBundle\Command\GreetCommand;
+    use AppBundle\Command\GreetCommand;
 
     class ListCommandTest extends \PHPUnit_Framework_TestCase
     {
@@ -186,7 +205,7 @@ you can extend your test from
     use Symfony\Component\Console\Tester\CommandTester;
     use Symfony\Bundle\FrameworkBundle\Console\Application;
     use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-    use Acme\DemoBundle\Command\GreetCommand;
+    use AppBundle\Command\GreetCommand;
 
     class ListCommandTest extends WebTestCase
     {

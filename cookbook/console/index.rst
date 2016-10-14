@@ -6,5 +6,6 @@ Console
 
     console_command
     usage
-    sending_emails
+    command_in_controller
+    request_context
     logging

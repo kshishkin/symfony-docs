@@ -6,11 +6,11 @@
 Requirements for Running Symfony
 ================================
 
-To run Symfony, your system needs to adhere to a list of requirements. You can
-easily see if your system passes all requirements by running the ``web/config.php``
-in your Symfony distribution. Since the CLI often uses a different ``php.ini``
-configuration file, it's also a good idea to check your requirements from
-the command line via:
+To run Symfony, your system needs to adhere to a list of requirements. You
+can easily see if your system passes all requirements by running the
+``web/config.php`` in your Symfony distribution. Since the CLI often uses
+a different ``php.ini`` configuration file, it's also a good idea to check
+your requirements from the command line via:
 
 .. code-block:: bash
 
@@ -57,4 +57,4 @@ If you want to use Doctrine, you will need to have PDO installed. Additionally,
 you need to have the PDO driver installed for the database server you want
 to use.
 
-.. _`Requirements section of the README`: https://github.com/symfony/symfony#requirements
+.. _`Requirements section of the README`: https://github.com/symfony/symfony/blob/2.3/README.md#requirements

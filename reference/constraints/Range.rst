@@ -20,27 +20,15 @@ Validates that a given number is *between* some minimum and maximum number.
 Basic Usage
 -----------
 
-To verify that the "height" field of a class is between "120" and "180", you might add
-the following:
+To verify that the "height" field of a class is between "120" and "180",
+you might add the following:
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/EventBundle/Resources/config/validation.yml
-        Acme\EventBundle\Entity\Participant:
-            properties:
-                height:
-                    - Range:
-                        min: 120
-                        max: 180
-                        minMessage: You must be at least {{ limit }}cm tall to enter
-                        maxMessage: You cannot be taller than {{ limit }}cm to enter
-
     .. code-block:: php-annotations
 
-        // src/Acme/EventBundle/Entity/Participant.php
-        namespace Acme\EventBundle\Entity;
+        // src/AppBundle/Entity/Participant.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Constraints as Assert;
 
@@ -57,15 +45,27 @@ the following:
              protected $height;
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Participant:
+            properties:
+                height:
+                    - Range:
+                        min: 120
+                        max: 180
+                        minMessage: You must be at least {{ limit }}cm tall to enter
+                        maxMessage: You cannot be taller than {{ limit }}cm to enter
+
     .. code-block:: xml
 
-        <!-- src/Acme/EventBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\EventBundle\Entity\Participant">
+            <class name="AppBundle\Entity\Participant">
                 <property name="height">
                     <constraint name="Range">
                         <option name="min">120</option>
@@ -79,8 +79,8 @@ the following:
 
     .. code-block:: php
 
-        // src/Acme/EventBundle/Entity/Participant.php
-        namespace Acme\EventBundle\Entity;
+        // src/AppBundle/Entity/Participant.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Mapping\ClassMetadata;
         use Symfony\Component\Validator\Constraints as Assert;
@@ -122,16 +122,16 @@ minMessage
 
 **type**: ``string`` **default**: ``This value should be {{ limit }} or more.``
 
-The message that will be shown if the underlying value is less than the `min`_
-option.
+The message that will be shown if the underlying value is less than the
+`min`_ option.
 
 maxMessage
 ~~~~~~~~~~
 
 **type**: ``string`` **default**: ``This value should be {{ limit }} or less.``
 
-The message that will be shown if the underlying value is more than the `max`_
-option.
+The message that will be shown if the underlying value is more than the
+`max`_ option.
 
 invalidMessage
 ~~~~~~~~~~~~~~

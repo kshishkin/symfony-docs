@@ -155,17 +155,22 @@ kernel::
     $kernel->loadClassCache();
     // wrap the default AppKernel with the AppCache one
     $kernel = new AppCache($kernel);
+
     $request = Request::createFromGlobals();
+
     $response = $kernel->handle($request);
     $response->send();
+
     $kernel->terminate($request, $response);
 
 The caching kernel will immediately act as a reverse proxy - caching responses
 from your application and returning them to the client.
 
-Now that you're using a "proxy", you'll need to configure ``127.0.0.1`` under
-the ``trusted_proxies`` configuration (see :ref:`the reference <reference-framework-trusted-proxies>`).
-Without this, the client's IP address and a few other things won't report correctly.
+.. caution::
+
+    If you're using the :ref:`framework.http_method_override <configuration-framework-http_method_override>`
+    option to read the HTTP method from a ``_method`` parameter, see the
+    above link for a tweak you need to make.
 
 .. tip::
 
@@ -206,36 +211,41 @@ method::
 
 Here is a list of the main options:
 
-* ``default_ttl``: The number of seconds that a cache entry should be
-  considered fresh when no explicit freshness information is provided in a
-  response. Explicit ``Cache-Control`` or ``Expires`` headers override this
-  value (default: ``0``);
+``default_ttl``
+    The number of seconds that a cache entry should be considered fresh when no
+    explicit freshness information is provided in a response. Explicit
+    ``Cache-Control`` or ``Expires`` headers override this value (default: ``0``).
 
-* ``private_headers``: Set of request headers that trigger "private"
-  ``Cache-Control`` behavior on responses that don't explicitly state whether
-  the response is ``public`` or ``private`` via a ``Cache-Control`` directive.
-  (default: ``Authorization`` and ``Cookie``);
+``private_headers``
+    Set of request headers that trigger "private" ``Cache-Control`` behavior on
+    responses that don't explicitly state whether the response is ``public`` or
+    ``private`` via a ``Cache-Control`` directive (default: ``Authorization``
+    and ``Cookie``).
 
-* ``allow_reload``: Specifies whether the client can force a cache reload by
-  including a ``Cache-Control`` "no-cache" directive in the request. Set it to
-  ``true`` for compliance with RFC 2616 (default: ``false``);
+``allow_reload``
+    Specifies whether the client can force a cache reload by including a
+    ``Cache-Control`` "no-cache" directive in the request. Set it to ``true`` for
+    compliance with RFC 2616 (default: ``false``).
 
-* ``allow_revalidate``: Specifies whether the client can force a cache
-  revalidate by including a ``Cache-Control`` "max-age=0" directive in the
-  request. Set it to ``true`` for compliance with RFC 2616 (default: false);
+``allow_revalidate``
+    Specifies whether the client can force a cache revalidate by including a
+    ``Cache-Control`` "max-age=0" directive in the request. Set it to ``true`` for
+    compliance with RFC 2616 (default: ``false``).
 
-* ``stale_while_revalidate``: Specifies the default number of seconds (the
-  granularity is the second as the Response TTL precision is a second) during
-  which the cache can immediately return a stale response while it revalidates
-  it in the background (default: ``2``); this setting is overridden by the
-  ``stale-while-revalidate`` HTTP ``Cache-Control`` extension (see RFC 5861);
+``stale_while_revalidate``
+    Specifies the default number of seconds (the granularity is the second as the
+    Response TTL precision is a second) during which the cache can immediately
+    return a stale response while it revalidates it in the background (default:
+    ``2``); this setting is overridden by the ``stale-while-revalidate`` HTTP
+    ``Cache-Control`` extension (see RFC 5861).
 
-* ``stale_if_error``: Specifies the default number of seconds (the granularity
-  is the second) during which the cache can serve a stale response when an
-  error is encountered (default: ``60``). This setting is overridden by the
-  ``stale-if-error`` HTTP ``Cache-Control`` extension (see RFC 5861).
+``stale_if_error``
+    Specifies the default number of seconds (the granularity is the second) during
+    which the cache can serve a stale response when an error is encountered
+    (default: ``60``). This setting is overridden by the ``stale-if-error`` HTTP
+    ``Cache-Control`` extension (see RFC 5861).
 
-If ``debug`` is ``true``, Symfony automatically adds a ``X-Symfony-Cache``
+If ``debug`` is ``true``, Symfony automatically adds an ``X-Symfony-Cache``
 header to the response containing useful information about cache hits and
 misses.
 
@@ -332,7 +342,14 @@ its creation more manageable::
     // set a custom Cache-Control directive
     $response->headers->addCacheControlDirective('must-revalidate', true);
 
-Public vs private Responses
+.. tip::
+
+    If you need to set cache headers for many different controller actions,
+    you might want to look into the FOSHttpCacheBundle_. It provides a way
+    to define cache headers based on the URL pattern and other request
+    properties.
+
+Public vs Private Responses
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Both gateway and proxy caches are considered "shared" caches as the cached
@@ -343,11 +360,12 @@ and then returned to every subsequent user who asked for their account page!
 
 To handle this situation, every response may be set to be public or private:
 
-* *public*: Indicates that the response may be cached by both private and
-  shared caches;
+*public*
+    Indicates that the response may be cached by both private and shared caches.
 
-* *private*: Indicates that all or part of the response message is intended
-  for a single user and must not be cached by a shared cache.
+*private*
+    Indicates that all or part of the response message is intended for a single
+    user and must not be cached by a shared cache.
 
 Symfony conservatively defaults each response to be private. To take advantage
 of shared caches (like the Symfony reverse proxy), the response will need
@@ -366,13 +384,15 @@ This has two very reasonable consequences:
 
 * You should *never* change the state of your application when responding
   to a GET or HEAD request. Even if you don't use a gateway cache, the presence
-  of proxy caches mean that any GET or HEAD request may or may not actually
+  of proxy caches means that any GET or HEAD request may or may not actually
   hit your server;
 
 * Don't expect PUT, POST or DELETE methods to cache. These methods are meant
   to be used when mutating the state of your application (e.g. deleting a
   blog post). Caching them would prevent certain requests from hitting and
   mutating your application.
+
+.. _http-cache-defaults:
 
 Caching Rules and Defaults
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -397,9 +417,10 @@ header when none is set by the developer by following these rules:
   ``private`` directive automatically (except when ``s-maxage`` is set).
 
 .. _http-expiration-validation:
+.. _http-expiration-and-validation:
 
-HTTP Expiration and Validation
-------------------------------
+HTTP Expiration, Validation and Invalidation
+--------------------------------------------
 
 The HTTP specification defines two caching models:
 
@@ -416,7 +437,9 @@ The HTTP specification defines two caching models:
   header) to check if the page has changed since being cached.
 
 The goal of both models is to never generate the same response twice by relying
-on a cache to store and return "fresh" responses.
+on a cache to store and return "fresh" responses. To achieve long caching times
+but still provide updated content immediately, *cache invalidation* is
+sometimes used.
 
 .. sidebar:: Reading the HTTP Specification
 
@@ -425,7 +448,7 @@ on a cache to store and return "fresh" responses.
     model of the specification dominates your work. Unfortunately, the actual
     specification document - `RFC 2616`_ - can be difficult to read.
 
-    There is an on-going effort (`HTTP Bis`_) to rewrite the RFC 2616. It does
+    There is an ongoing effort (`HTTP Bis`_) to rewrite the RFC 2616. It does
     not describe a new version of HTTP, but mostly clarifies the original HTTP
     specification. The organization is also improved as the specification
     is split into seven parts; everything related to HTTP caching can be
@@ -480,7 +503,7 @@ The resulting HTTP header will look like this:
     timezone as required by the specification.
 
 Note that in HTTP versions before 1.1 the origin server wasn't required to
-send the ``Date`` header. Consequently the cache (e.g. the browser) might
+send the ``Date`` header. Consequently, the cache (e.g. the browser) might
 need to rely on the local clock to evaluate the ``Expires`` header making
 the lifetime calculation vulnerable to clock skew. Another limitation
 of the ``Expires`` header is that the specification states that "HTTP/1.1
@@ -526,9 +549,9 @@ won't be asked to return the updated response until the cache finally becomes
 stale.
 
 The validation model addresses this issue. Under this model, the cache continues
-to store responses. The difference is that, for each request, the cache asks
-the application whether or not the cached response is still valid. If the
-cache *is* still valid, your application should return a 304 status code
+to store responses. The difference is that, for each request, the cache asks the
+application if the cached response is still valid or if it needs to be regenerated.
+If the cache *is* still valid, your application should return a 304 status code
 and no content. This tells the cache that it's ok to return the cached response.
 
 Under this model, you only save CPU if you're able to determine that the
@@ -562,16 +585,22 @@ each ``ETag`` must be unique across all representations of the same resource.
 
 To see a simple implementation, generate the ETag as the md5 of the content::
 
+    // src/AppBundle/Controller/DefaultController.php
+    namespace AppBundle\Controller;
+
     use Symfony\Component\HttpFoundation\Request;
 
-    public function indexAction(Request $request)
+    class DefaultController extends Controller
     {
-        $response = $this->render('MyBundle:Main:index.html.twig');
-        $response->setETag(md5($response->getContent()));
-        $response->setPublic(); // make sure the response is public/cacheable
-        $response->isNotModified($request);
+        public function homepageAction(Request $request)
+        {
+            $response = $this->render('static/homepage.html.twig');
+            $response->setETag(md5($response->getContent()));
+            $response->setPublic(); // make sure the response is public/cacheable
+            $response->isNotModified($request);
 
-        return $response;
+            return $response;
+        }
     }
 
 The :method:`Symfony\\Component\\HttpFoundation\\Response::isNotModified`
@@ -598,7 +627,7 @@ doing so much work.
 
     Symfony also supports weak ETags by passing ``true`` as the second
     argument to the
-    :method:`Symfony\\Component\\HttpFoundation\\Response::setETag` method.
+    :method:`Symfony\\Component\\HttpFoundation\\Response::setEtag` method.
 
 .. index::
    single: Cache; Last-Modified header
@@ -618,28 +647,38 @@ For instance, you can use the latest update date for all the objects needed to
 compute the resource representation as the value for the ``Last-Modified``
 header value::
 
+    // src/AppBundle/Controller/ArticleController.php
+    namespace AppBundle\Controller;
+
+    // ...
+    use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\HttpFoundation\Request;
+    use AppBundle\Entity\Article;
 
-    public function showAction($articleSlug, Request $request)
+    class ArticleController extends Controller
     {
-        // ...
+        public function showAction(Article $article, Request $request)
+        {
+            $author = $article->getAuthor();
 
-        $articleDate = new \DateTime($article->getUpdatedAt());
-        $authorDate = new \DateTime($author->getUpdatedAt());
+            $articleDate = new \DateTime($article->getUpdatedAt());
+            $authorDate = new \DateTime($author->getUpdatedAt());
 
-        $date = $authorDate > $articleDate ? $authorDate : $articleDate;
+            $date = $authorDate > $articleDate ? $authorDate : $articleDate;
 
-        $response->setLastModified($date);
-        // Set response as public. Otherwise it will be private by default.
-        $response->setPublic();
+            $response = new Response();
+            $response->setLastModified($date);
+            // Set response as public. Otherwise it will be private by default.
+            $response->setPublic();
 
-        if ($response->isNotModified($request)) {
+            if ($response->isNotModified($request)) {
+                return $response;
+            }
+
+            // ... do more work to populate the response with the full content
+
             return $response;
         }
-
-        // ... do more work to populate the response with the full content
-
-        return $response;
     }
 
 The :method:`Symfony\\Component\\HttpFoundation\\Response::isNotModified`
@@ -668,40 +707,46 @@ Put another way, the less you do in your application to return a 304 response,
 the better. The ``Response::isNotModified()`` method does exactly that by
 exposing a simple and efficient pattern::
 
+    // src/AppBundle/Controller/ArticleController.php
+    namespace AppBundle\Controller;
+
+    // ...
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\HttpFoundation\Request;
 
-    public function showAction($articleSlug, Request $request)
+    class ArticleController extends Controller
     {
-        // Get the minimum information to compute
-        // the ETag or the Last-Modified value
-        // (based on the Request, data is retrieved from
-        // a database or a key-value store for instance)
-        $article = ...;
+        public function showAction($articleSlug, Request $request)
+        {
+            // Get the minimum information to compute
+            // the ETag or the Last-Modified value
+            // (based on the Request, data is retrieved from
+            // a database or a key-value store for instance)
+            $article = ...;
 
-        // create a Response with an ETag and/or a Last-Modified header
-        $response = new Response();
-        $response->setETag($article->computeETag());
-        $response->setLastModified($article->getPublishedAt());
+            // create a Response with an ETag and/or a Last-Modified header
+            $response = new Response();
+            $response->setETag($article->computeETag());
+            $response->setLastModified($article->getPublishedAt());
 
-        // Set response as public. Otherwise it will be private by default.
-        $response->setPublic();
+            // Set response as public. Otherwise it will be private by default.
+            $response->setPublic();
 
-        // Check that the Response is not modified for the given Request
-        if ($response->isNotModified($request)) {
-            // return the 304 Response immediately
-            return $response;
+            // Check that the Response is not modified for the given Request
+            if ($response->isNotModified($request)) {
+                // return the 304 Response immediately
+                return $response;
+            }
+
+            // do more work here - like retrieving more data
+            $comments = ...;
+
+            // or render a template with the $response you've already started
+            return $this->render('article/show.html.twig', array(
+                'article' => $article,
+                'comments' => $comments
+            ), $response);
         }
-
-        // do more work here - like retrieving more data
-        $comments = ...;
-
-        // or render a template with the $response you've already started
-        return $this->render(
-            'MyBundle:MyController:article.html.twig',
-            array('article' => $article, 'comments' => $comments),
-            $response
-        );
     }
 
 When the ``Response`` is not modified, the ``isNotModified()`` automatically sets
@@ -767,11 +812,10 @@ at some interval (the expiration) to verify that the content is still valid.
 .. tip::
 
     You can also define HTTP caching headers for expiration and validation by using
-    annotations. See the
-    :doc:`FrameworkExtraBundle documentation </bundles/SensioFrameworkExtraBundle/annotations/cache>`.
+    annotations. See the `FrameworkExtraBundle documentation`_.
 
 .. index::
-    pair: Cache; Configuration
+   pair: Cache; Configuration
 
 More Response Methods
 ~~~~~~~~~~~~~~~~~~~~~
@@ -799,8 +843,113 @@ Additionally, most cache-related HTTP headers can be set via the single
     ));
 
 .. index::
-  single: Cache; ESI
-  single: ESI
+   single: Cache; Invalidation
+
+.. _http-cache-invalidation:
+
+Cache Invalidation
+~~~~~~~~~~~~~~~~~~
+
+    "There are only two hard things in Computer Science: cache invalidation
+    and naming things." -- Phil Karlton
+
+Once an URL is cached by a gateway cache, the cache will not ask the
+application for that content anymore. This allows the cache to provide fast
+responses and reduces the load on your application. However, you risk
+delivering outdated content. A way out of this dilemma is to use long
+cache lifetimes, but to actively notify the gateway cache when content
+changes. Reverse proxies usually provide a channel to receive such
+notifications, typically through special HTTP requests.
+
+.. caution::
+
+    While cache invalidation is powerful, avoid it when possible. If you fail
+    to invalidate something, outdated caches will be served for a potentially
+    long time. Instead, use short cache lifetimes or use the validation model,
+    and adjust your controllers to perform efficient validation checks as
+    explained in :ref:`optimizing-cache-validation`.
+
+    Furthermore, since invalidation is a topic specific to each type of reverse
+    proxy, using this concept will tie you to a specific reverse proxy or need
+    additional efforts to support different proxies.
+
+Sometimes, however, you need that extra performance you can get when
+explicitly invalidating. For invalidation, your application needs to detect
+when content changes and tell the cache to remove the URLs which contain
+that data from its cache.
+
+.. tip::
+
+    If you want to use cache invalidation, have a look at the
+    `FOSHttpCacheBundle`_. This bundle provides services to help with various
+    cache invalidation concepts and also documents the configuration for a
+    couple of common caching proxies.
+
+If one content corresponds to one URL, the ``PURGE`` model works well.
+You send a request to the cache proxy with the HTTP method ``PURGE`` (using
+the word "PURGE" is a convention, technically this can be any string) instead
+of ``GET`` and make the cache proxy detect this and remove the data from the
+cache instead of going to the application to get a response.
+
+Here is how you can configure the Symfony reverse proxy to support the
+``PURGE`` HTTP method::
+
+    // app/AppCache.php
+
+    use Symfony\Bundle\FrameworkBundle\HttpCache\HttpCache;
+    use Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\Response;
+    // ...
+
+    class AppCache extends HttpCache
+    {
+        protected function invalidate(Request $request, $catch = false)
+        {
+            if ('PURGE' !== $request->getMethod()) {
+                return parent::invalidate($request, $catch);
+            }
+
+            if ('127.0.0.1' !== $request->getClientIp()) {
+                return new Response(
+                    'Invalid HTTP method',
+                    400
+                );
+            }
+
+            $response = new Response();
+            if ($this->getStore()->purge($request->getUri())) {
+                $response->setStatusCode(200, 'Purged');
+            } else {
+                $response->setStatusCode(404, 'Not found');
+            }
+
+            return $response;
+        }
+    }
+
+.. caution::
+
+    You must protect the ``PURGE`` HTTP method somehow to avoid random people
+    purging your cached data.
+
+**Purge** instructs the cache to drop a resource in *all its variants*
+(according to the ``Vary`` header, see above). An alternative to purging is
+**refreshing** a content. Refreshing means that the caching proxy is
+instructed to discard its local cache and fetch the content again. This way,
+the new content is already available in the cache. The drawback of refreshing
+is that variants are not invalidated.
+
+In many applications, the same content bit is used on various pages with
+different URLs. More flexible concepts exist for those cases:
+
+* **Banning** invalidates responses matching regular expressions on the
+  URL or other criteria;
+* **Cache tagging** lets you add a tag for each content used in a response
+  so that you can invalidate all URLs containing a certain content.
+
+.. index::
+   single: Cache; ESI
+   single: ESI
 
 .. _edge-side-includes:
 
@@ -812,7 +961,7 @@ have one limitation: they can only cache whole pages. If you can't cache
 whole pages or if parts of a page has "more" dynamic parts, you are out of
 luck. Fortunately, Symfony provides a solution for these cases, based on a
 technology called `ESI`_, or Edge Side Includes. Akamai wrote this specification
-almost 10 years ago, and it allows specific parts of a page to have a different
+almost 10 years ago and it allows specific parts of a page to have a different
 caching strategy than the main page.
 
 The ESI specification describes tags you can embed in your pages to communicate
@@ -874,8 +1023,10 @@ First, to use ESI, be sure to enable it in your application configuration:
         <container xmlns="http://symfony.com/schema/dic/symfony"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:framework="http://symfony.com/schema/dic/symfony"
-            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
-                http://symfony.com/schema/dic/symfony http://symfony.com/schema/dic/symfony/symfony-1.0.xsd">
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/symfony
+                http://symfony.com/schema/dic/symfony/symfony-1.0.xsd">
 
             <framework:config>
                 <!-- ... -->
@@ -897,13 +1048,19 @@ independent of the rest of the page.
 
 .. code-block:: php
 
-    public function indexAction()
-    {
-        $response = $this->render('MyBundle:MyController:index.html.twig');
-        // set the shared max age - which also marks the response as public
-        $response->setSharedMaxAge(600);
+    // src/AppBundle/Controller/DefaultController.php
 
-        return $response;
+    // ...
+    class DefaultController extends Controller
+    {
+        public function aboutAction()
+        {
+            $response = $this->render('static/about.html.twig');
+            // set the shared max age - which also marks the response as public
+            $response->setSharedMaxAge(600);
+
+            return $response;
+        }
     }
 
 In this example, the full-page cache has a lifetime of ten minutes.
@@ -916,23 +1073,38 @@ matter), Symfony uses the standard ``render`` helper to configure ESI tags:
 
 .. configuration-block::
 
-    .. code-block:: jinja
+    .. code-block:: twig
+
+        {# app/Resources/views/static/about.html.twig #}
 
         {# you can use a controller reference #}
-        {{ render_esi(controller('...:news', { 'max': 5 })) }}
+        {{ render_esi(controller('AppBundle:News:latest', { 'maxPerPage': 5 })) }}
 
         {# ... or a URL #}
-        {{ render_esi(url('latest_news', { 'max': 5 })) }}
+        {{ render_esi(url('latest_news', { 'maxPerPage': 5 })) }}
 
     .. code-block:: html+php
 
-        <?php echo $view['actions']->render(
-            new \Symfony\Component\HttpKernel\Controller\ControllerReference('...:news', array('max' => 5)),
-            array('strategy' => 'esi'))
-        ?>
+        <!-- app/Resources/views/static/about.html.php -->
 
+        // you can use a controller reference
+        use Symfony\Component\HttpKernel\Controller\ControllerReference;
         <?php echo $view['actions']->render(
-            $view['router']->generate('latest_news', array('max' => 5), true),
+            new ControllerReference(
+                'AppBundle:News:latest',
+                array('maxPerPage' => 5)
+            ),
+            array('strategy' => 'esi')
+        ) ?>
+
+        // ... or a URL
+        use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+        <?php echo $view['actions']->render(
+            $view['router']->generate(
+                'latest_news',
+                array('maxPerPage' => 5),
+                UrlGeneratorInterface::ABSOLUTE_URL
+            ),
             array('strategy' => 'esi'),
         ) ?>
 
@@ -942,10 +1114,17 @@ wondering why you would want to use a helper instead of just writing the ESI
 tag yourself. That's because using a helper makes your application work even
 if there is no gateway cache installed.
 
+.. tip::
+
+    As you'll see below, the ``maxPerPage`` variable you pass is available
+    as an argument to your controller (i.e. ``$maxPerPage``). The variables
+    passed through ``render_esi`` also become part of the cache key so that
+    you have unique caches for each combination of variables and values.
+
 When using the default ``render`` function (or setting the renderer to
 ``inline``), Symfony merges the included page content into the main one
 before sending the response to the client. But if you use the ``esi`` renderer
-(i.e. call ``render_esi``), *and* if Symfony detects that it's talking to a
+(i.e. call ``render_esi``) *and* if Symfony detects that it's talking to a
 gateway cache that supports ESI, it generates an ESI include tag. But if there
 is no gateway cache or if it does not support ESI, Symfony will just merge
 the included page content within the main one as it would have done if you had
@@ -962,15 +1141,25 @@ of the master page.
 
 .. code-block:: php
 
-    public function newsAction($max)
-    {
-        // ...
+    // src/AppBundle/Controller/NewsController.php
+    namespace AppBundle\Controller;
 
-        $response->setSharedMaxAge(60);
+    // ...
+    class NewsController extends Controller
+    {
+        public function latestAction($maxPerPage)
+        {
+            // ...
+            $response->setSharedMaxAge(60);
+
+            return $response;
+        }
     }
 
 With ESI, the full page cache will be valid for 600 seconds, but the news
 component cache will only last for 60 seconds.
+
+.. _book-http_cache-fragments:
 
 When using a controller reference, the ESI tag should reference the embedded
 action as an accessible URL so the gateway cache can fetch it independently of
@@ -995,8 +1184,10 @@ that must be enabled in your configuration:
         <container xmlns="http://symfony.com/schema/dic/services"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:doctrine="http://symfony.com/schema/dic/framework"
-            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
-                http://symfony.com/schema/dic/symfony http://symfony.com/schema/dic/symfony/symfony-1.0.xsd">
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/symfony
+                http://symfony.com/schema/dic/symfony/symfony-1.0.xsd">
 
             <!-- ... -->
             <framework:config>
@@ -1016,10 +1207,11 @@ One great advantage of the ESI renderer is that you can make your application
 as dynamic as needed and at the same time, hit the application as little as
 possible.
 
-.. tip::
+.. caution::
 
-    The listener only responds to local IP addresses or
-    :doc:`trusted proxies </cookbook/request/load_balancer_reverse_proxy>`.
+    The fragment listener only responds to signed requests. Requests are only
+    signed when using the fragment renderer and the ``render_esi`` Twig
+    function.
 
 .. note::
 
@@ -1031,73 +1223,14 @@ possible.
 
 The ``render_esi`` helper supports two other useful options:
 
-* ``alt``: used as the ``alt`` attribute on the ESI tag, which allows you
-  to specify an alternative URL to be used if the ``src`` cannot be found;
+``alt``
+    Used as the ``alt`` attribute on the ESI tag, which allows you to specify an
+    alternative URL to be used if the ``src`` cannot be found.
 
-* ``ignore_errors``: if set to true, an ``onerror`` attribute will be added
-  to the ESI with a value of ``continue`` indicating that, in the event of
-  a failure, the gateway cache will simply remove the ESI tag silently.
-
-.. index::
-    single: Cache; Invalidation
-
-.. _http-cache-invalidation:
-
-Cache Invalidation
-------------------
-
-    "There are only two hard things in Computer Science: cache invalidation
-    and naming things." -- Phil Karlton
-
-You should never need to invalidate cached data because invalidation is already
-taken into account natively in the HTTP cache models. If you use validation,
-you never need to invalidate anything by definition; and if you use expiration
-and need to invalidate a resource, it means that you set the expires date
-too far away in the future.
-
-.. note::
-
-    Since invalidation is a topic specific to each type of reverse proxy,
-    if you don't worry about invalidation, you can switch between reverse
-    proxies without changing anything in your application code.
-
-Actually, all reverse proxies provide ways to purge cached data, but you
-should avoid them as much as possible. The most standard way is to purge the
-cache for a given URL by requesting it with the special ``PURGE`` HTTP method.
-
-Here is how you can configure the Symfony reverse proxy to support the
-``PURGE`` HTTP method::
-
-    // app/AppCache.php
-
-    // ...
-    use Symfony\Bundle\FrameworkBundle\HttpCache\HttpCache;
-    use Symfony\Component\HttpFoundation\Request;
-    use Symfony\Component\HttpFoundation\Response;
-
-    class AppCache extends HttpCache
-    {
-        protected function invalidate(Request $request, $catch = false)
-        {
-            if ('PURGE' !== $request->getMethod()) {
-                return parent::invalidate($request, $catch);
-            }
-
-            $response = new Response();
-            if ($this->getStore()->purge($request->getUri())) {
-                $response->setStatusCode(200, 'Purged');
-            } else {
-                $response->setStatusCode(404, 'Not purged');
-            }
-
-            return $response;
-        }
-    }
-
-.. caution::
-
-    You must protect the ``PURGE`` HTTP method somehow to avoid random people
-    purging your cached data.
+``ignore_errors``
+    If set to true, an ``onerror`` attribute will be added to the ESI with a value
+    of ``continue`` indicating that, in the event of a failure, the gateway cache
+    will simply remove the ESI tag silently.
 
 Summary
 -------
@@ -1114,7 +1247,7 @@ Learn more from the Cookbook
 
 * :doc:`/cookbook/cache/varnish`
 
-.. _`Things Caches Do`: http://tomayko.com/writings/things-caches-do
+.. _`Things Caches Do`: http://2ndscale.com/writings/things-caches-do
 .. _`Cache Tutorial`: http://www.mnot.net/cache_docs/
 .. _`Varnish`: https://www.varnish-cache.org/
 .. _`Squid in reverse proxy mode`: http://wiki.squid-cache.org/SquidFaq/ReverseProxy
@@ -1124,4 +1257,6 @@ Learn more from the Cookbook
 .. _`HTTP Bis`: http://tools.ietf.org/wg/httpbis/
 .. _`P4 - Conditional Requests`: http://tools.ietf.org/html/draft-ietf-httpbis-p4-conditional
 .. _`P6 - Caching: Browser and intermediary caches`: http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache
+.. _`FrameworkExtraBundle documentation`: https://symfony.com/doc/current/bundles/SensioFrameworkExtraBundle/annotations/cache.html
 .. _`ESI`: http://www.w3.org/TR/esi-lang
+.. _`FOSHttpCacheBundle`: http://foshttpcachebundle.readthedocs.org/

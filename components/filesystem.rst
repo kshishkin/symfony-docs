@@ -16,7 +16,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/filesystem`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/Filesystem).
+* Use the official Git repository (https://github.com/symfony/filesystem).
+
+.. include:: /components/require_autoload.rst.inc
 
 Usage
 -----
@@ -30,7 +32,7 @@ endpoint for filesystem operations::
     $fs = new Filesystem();
 
     try {
-        $fs->mkdir('/tmp/random/dir/' . mt_rand());
+        $fs->mkdir('/tmp/random/dir/'.mt_rand());
     } catch (IOException $e) {
         echo "An error occurred while creating your directory";
     }
@@ -47,11 +49,11 @@ endpoint for filesystem operations::
     string, an array or any object implementing :phpclass:`Traversable` as
     the target argument.
 
-Mkdir
+mkdir
 ~~~~~
 
 :method:`Symfony\\Component\\Filesystem\\Filesystem::mkdir` creates a directory.
-On posix filesystems, directories are created with a default mode value
+On POSIX filesystems, directories are created with a default mode value
 `0777`. You can use the second argument to set your own mode::
 
     $fs->mkdir('/tmp/photos', 0700);
@@ -61,7 +63,7 @@ On posix filesystems, directories are created with a default mode value
     You can pass an array or any :phpclass:`Traversable` object as the first
     argument.
 
-Exists
+exists
 ~~~~~~
 
 :method:`Symfony\\Component\\Filesystem\\Filesystem::exists` checks for the
@@ -78,7 +80,7 @@ presence of all files or directories and returns ``false`` if a file is missing:
     You can pass an array or any :phpclass:`Traversable` object as the first
     argument.
 
-Copy
+copy
 ~~~~
 
 :method:`Symfony\\Component\\Filesystem\\Filesystem::copy` is used to copy
@@ -92,7 +94,7 @@ the third boolean argument::
     // image.jpg will be overridden
     $fs->copy('image-ICC.jpg', 'image.jpg', true);
 
-Touch
+touch
 ~~~~~
 
 :method:`Symfony\\Component\\Filesystem\\Filesystem::touch` sets access and
@@ -111,7 +113,7 @@ your own with the second argument. The third argument is the access time::
     You can pass an array or any :phpclass:`Traversable` object as the first
     argument.
 
-Chown
+chown
 ~~~~~
 
 :method:`Symfony\\Component\\Filesystem\\Filesystem::chown` is used to change
@@ -127,7 +129,7 @@ the owner of a file. The third argument is a boolean recursive option::
     You can pass an array or any :phpclass:`Traversable` object as the first
     argument.
 
-Chgrp
+chgrp
 ~~~~~
 
 :method:`Symfony\\Component\\Filesystem\\Filesystem::chgrp` is used to change
@@ -143,7 +145,7 @@ the group of a file. The third argument is a boolean recursive option::
     You can pass an array or any :phpclass:`Traversable` object as the first
     argument.
 
-Chmod
+chmod
 ~~~~~
 
 :method:`Symfony\\Component\\Filesystem\\Filesystem::chmod` is used to change
@@ -159,7 +161,7 @@ the mode of a file. The fourth argument is a boolean recursive option::
     You can pass an array or any :phpclass:`Traversable` object as the first
     argument.
 
-Remove
+remove
 ~~~~~~
 
 :method:`Symfony\\Component\\Filesystem\\Filesystem::remove` is used to remove
@@ -172,7 +174,7 @@ files, symlinks, directories easily::
     You can pass an array or any :phpclass:`Traversable` object as the first
     argument.
 
-Rename
+rename
 ~~~~~~
 
 :method:`Symfony\\Component\\Filesystem\\Filesystem::rename` is used to rename

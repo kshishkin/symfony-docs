@@ -36,8 +36,8 @@ Customizing your Form Based on the Underlying Data
 Before jumping right into dynamic form generation, hold on and recall what
 a bare form class looks like::
 
-    // src/Acme/DemoBundle/Form/Type/ProductType.php
-    namespace Acme\DemoBundle\Form\Type;
+    // src/AppBundle/Form/Type/ProductType.php
+    namespace AppBundle\Form\Type;
 
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\FormBuilderInterface;
@@ -54,7 +54,7 @@ a bare form class looks like::
         public function setDefaultOptions(OptionsResolverInterface $resolver)
         {
             $resolver->setDefaults(array(
-                'data_class' => 'Acme\DemoBundle\Entity\Product'
+                'data_class' => 'AppBundle\Entity\Product'
             ));
         }
 
@@ -77,7 +77,7 @@ or if an existing product is being edited (e.g. a product fetched from the datab
 
 Suppose now, that you don't want the user to be able to change the ``name`` value
 once the object has been created. To do this, you can rely on Symfony's
-:doc:`EventDispatcher </components/event_dispatcher/introduction>`
+:doc:`EventDispatcher component </components/event_dispatcher/introduction>`
 system to analyze the data on the object and modify the form based on the
 Product object's data. In this entry, you'll learn how to add this level of
 flexibility to your forms.
@@ -90,8 +90,8 @@ Adding an Event Listener to a Form Class
 So, instead of directly adding that ``name`` widget, the responsibility of
 creating that particular field is delegated to an event listener::
 
-    // src/Acme/DemoBundle/Form/Type/ProductType.php
-    namespace Acme\DemoBundle\Form\Type;
+    // src/AppBundle/Form/Type/ProductType.php
+    namespace AppBundle\Form\Type;
 
     // ...
     use Symfony\Component\Form\FormEvent;
@@ -156,11 +156,11 @@ For better reusability or if there is some heavy logic in your event listener,
 you can also move the logic for creating the ``name`` field to an
 :ref:`event subscriber <event_dispatcher-using-event-subscribers>`::
 
-    // src/Acme/DemoBundle/Form/Type/ProductType.php
-    namespace Acme\DemoBundle\Form\Type;
+    // src/AppBundle/Form/Type/ProductType.php
+    namespace AppBundle\Form\Type;
 
     // ...
-    use Acme\DemoBundle\Form\EventListener\AddNameFieldSubscriber;
+    use AppBundle\Form\EventListener\AddNameFieldSubscriber;
 
     class ProductType extends AbstractType
     {
@@ -177,8 +177,8 @@ you can also move the logic for creating the ``name`` field to an
 Now the logic for creating the ``name`` field resides in it own subscriber
 class::
 
-    // src/Acme/DemoBundle/Form/EventListener/AddNameFieldSubscriber.php
-    namespace Acme\DemoBundle\Form\EventListener;
+    // src/AppBundle/Form/EventListener/AddNameFieldSubscriber.php
+    namespace AppBundle\Form\EventListener;
 
     use Symfony\Component\Form\FormEvent;
     use Symfony\Component\Form\FormEvents;
@@ -221,8 +221,8 @@ Creating the Form Type
 
 Using an event listener, your form might look like this::
 
-    // src/Acme/DemoBundle/Form/Type/FriendMessageFormType.php
-    namespace Acme\DemoBundle\Form\Type;
+    // src/AppBundle/Form/Type/FriendMessageFormType.php
+    namespace AppBundle\Form\Type;
 
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\FormBuilderInterface;
@@ -246,7 +246,7 @@ Using an event listener, your form might look like this::
 
         public function getName()
         {
-            return 'acme_friend_message';
+            return 'app_friend_message';
         }
 
         public function setDefaultOptions(OptionsResolverInterface $resolver)
@@ -283,7 +283,7 @@ Customizing the Form Type
 Now that you have all the basics in place you can take advantage of the ``SecurityContext``
 and fill in the listener logic::
 
-    // src/Acme/DemoBundle/FormType/FriendMessageFormType.php
+    // src/AppBundle/FormType/FriendMessageFormType.php
 
     use Symfony\Component\Security\Core\SecurityContext;
     use Doctrine\ORM\EntityRepository;
@@ -319,7 +319,7 @@ and fill in the listener logic::
                     $form = $event->getForm();
 
                     $formOptions = array(
-                        'class' => 'Acme\DemoBundle\Entity\User',
+                        'class' => 'AppBundle\Entity\User',
                         'property' => 'fullName',
                         'query_builder' => function (EntityRepository $er) use ($user) {
                             // build a custom query
@@ -389,58 +389,61 @@ it with :ref:`dic-tags-form-type`.
 
         # app/config/config.yml
         services:
-            acme.form.friend_message:
-                class: Acme\DemoBundle\Form\Type\FriendMessageFormType
-                arguments: ["@security.context"]
+            app.form.friend_message:
+                class: AppBundle\Form\Type\FriendMessageFormType
+                arguments: ['@security.context']
                 tags:
-                    - { name: form.type, alias: acme_friend_message }
+                    - { name: form.type, alias: app_friend_message }
 
     .. code-block:: xml
 
         <!-- app/config/config.xml -->
         <services>
-            <service id="acme.form.friend_message" class="Acme\DemoBundle\Form\Type\FriendMessageFormType">
+            <service id="app.form.friend_message" class="AppBundle\Form\Type\FriendMessageFormType">
                 <argument type="service" id="security.context" />
-                <tag name="form.type" alias="acme_friend_message" />
+                <tag name="form.type" alias="app_friend_message" />
             </service>
         </services>
 
     .. code-block:: php
 
         // app/config/config.php
-        $definition = new Definition('Acme\DemoBundle\Form\Type\FriendMessageFormType');
-        $definition->addTag('form.type', array('alias' => 'acme_friend_message'));
-        $container->setDefinition(
-            'acme.form.friend_message',
-            $definition,
-            array('security.context')
+        use Symfony\Component\DependencyInjection\Reference;
+
+        $definition = new Definition(
+            'AppBundle\Form\Type\FriendMessageFormType',
+            array(new Reference('security.context'))
         );
+        $definition->addTag('form.type', array('alias' => 'app_friend_message'));
 
-If you wish to create it from within a controller or any other service that has
-access to the form factory, you then use::
+        $container->setDefinition('app.form.friend_message', $definition);
 
-    use Symfony\Component\DependencyInjection\ContainerAware;
+If you wish to create it from within a service that has access to the form factory,
+you then use::
 
-    class FriendMessageController extends ContainerAware
+    $form = $formFactory->create('friend_message');
+
+In a controller that extends the :class:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller`
+class, you can simply call::
+
+    use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+
+    class FriendMessageController extends Controller
     {
         public function newAction(Request $request)
         {
-            $form = $this->get('form.factory')->create('acme_friend_message');
+            $form = $this->createForm('app_friend_message');
 
             // ...
         }
     }
-
-If you extend the ``Symfony\Bundle\FrameworkBundle\Controller\Controller`` class, you can simply call::
-
-    $form = $this->createForm('acme_friend_message');
 
 You can also easily embed the form type into another form::
 
     // inside some other "form type" class
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('message', 'acme_friend_message');
+        $builder->add('message', 'app_friend_message');
     }
 
 .. _cookbook-form-events-submitted-data:
@@ -459,8 +462,8 @@ will need the correct options in order for validation to pass.
 The meetup is passed as an entity field to the form. So we can access each
 sport like this::
 
-    // src/Acme/DemoBundle/Form/Type/SportMeetupType.php
-    namespace Acme\DemoBundle\Form\Type;
+    // src/AppBundle/Form/Type/SportMeetupType.php
+    namespace AppBundle\Form\Type;
 
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\FormBuilderInterface;
@@ -474,7 +477,7 @@ sport like this::
         {
             $builder
                 ->add('sport', 'entity', array(
-                    'class'       => 'AcmeDemoBundle:Sport',
+                    'class'       => 'AppBundle:Sport',
                     'empty_value' => '',
                 ))
             ;
@@ -491,7 +494,7 @@ sport like this::
                     $positions = null === $sport ? array() : $sport->getAvailablePositions();
 
                     $form->add('position', 'entity', array(
-                        'class'       => 'AcmeDemoBundle:Position',
+                        'class'       => 'AppBundle:Position',
                         'empty_value' => '',
                         'choices'     => $positions,
                     ));
@@ -532,12 +535,12 @@ new field automatically and map it to the submitted client data.
 
 The type would now look like::
 
-    // src/Acme/DemoBundle/Form/Type/SportMeetupType.php
-    namespace Acme\DemoBundle\Form\Type;
+    // src/AppBundle/Form/Type/SportMeetupType.php
+    namespace AppBundle\Form\Type;
 
     // ...
     use Symfony\Component\Form\FormInterface;
-    use Acme\DemoBundle\Entity\Sport;
+    use AppBundle\Entity\Sport;
 
     class SportMeetupType extends AbstractType
     {
@@ -545,7 +548,7 @@ The type would now look like::
         {
             $builder
                 ->add('sport', 'entity', array(
-                    'class'       => 'AcmeDemoBundle:Sport',
+                    'class'       => 'AppBundle:Sport',
                     'empty_value' => '',
                 ));
             ;
@@ -554,7 +557,7 @@ The type would now look like::
                 $positions = null === $sport ? array() : $sport->getAvailablePositions();
 
                 $form->add('position', 'entity', array(
-                    'class'       => 'AcmeDemoBundle:Position',
+                    'class'       => 'AppBundle:Position',
                     'empty_value' => '',
                     'choices'     => $positions,
                 ));
@@ -596,13 +599,13 @@ One piece that is still missing is the client-side updating of your form after
 the sport is selected. This should be handled by making an AJAX call back to
 your application. Assume that you have a sport meetup creation controller::
 
-    // src/Acme/DemoBundle/Controller/MeetupController.php
-    namespace Acme\DemoBundle\Controller;
+    // src/AppBundle/Controller/MeetupController.php
+    namespace AppBundle\Controller;
 
     use Symfony\Bundle\FrameworkBundle\Controller\Controller;
     use Symfony\Component\HttpFoundation\Request;
-    use Acme\DemoBundle\Entity\SportMeetup;
-    use Acme\DemoBundle\Form\Type\SportMeetupType;
+    use AppBundle\Entity\SportMeetup;
+    use AppBundle\Form\Type\SportMeetupType;
     // ...
 
     class MeetupController extends Controller
@@ -617,7 +620,7 @@ your application. Assume that you have a sport meetup creation controller::
             }
 
             return $this->render(
-                'AcmeDemoBundle:Meetup:create.html.twig',
+                'AppBundle:Meetup:create.html.twig',
                 array('form' => $form->createView())
             );
         }
@@ -630,9 +633,9 @@ field according to the current selection in the ``sport`` field:
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
-        {# src/Acme/DemoBundle/Resources/views/Meetup/create.html.twig #}
+        {# app/Resources/views/Meetup/create.html.twig #}
         {{ form_start(form) }}
             {{ form_row(form.sport) }}    {# <select id="meetup_sport" ... #}
             {{ form_row(form.position) }} {# <select id="meetup_position" ... #}
@@ -667,7 +670,7 @@ field according to the current selection in the ``sport`` field:
 
     .. code-block:: html+php
 
-        <!-- src/Acme/DemoBundle/Resources/views/Meetup/create.html.php -->
+        <!-- app/Resources/views/Meetup/create.html.php -->
         <?php echo $view['form']->start($form) ?>
             <?php echo $view['form']->row($form['sport']) ?>    <!-- <select id="meetup_sport" ... -->
             <?php echo $view['form']->row($form['position']) ?> <!-- <select id="meetup_position" ... -->
@@ -713,7 +716,7 @@ To suppress form validation you can use the ``POST_SUBMIT`` event and prevent
 the :class:`Symfony\\Component\\Form\\Extension\\Validator\\EventListener\\ValidationListener`
 from being called.
 
-The reason for needing to do this is that even if you set ``group_validation``
+The reason for needing to do this is that even if you set ``validation_groups``
 to ``false`` there  are still some integrity checks executed. For example
 an uploaded file will still be checked to see if it is too large and the form
 will still check to see if non-existing fields were submitted. To disable
@@ -721,10 +724,11 @@ all of this, use a listener::
 
     use Symfony\Component\Form\FormBuilderInterface;
     use Symfony\Component\Form\FormEvents;
+    use Symfony\Component\Form\FormEvent;
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->addEventListener(FormEvents::POST_SUBMIT, function ($event) {
+        $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
             $event->stopPropagation();
         }, 900); // Always set a higher priority than ValidationListener
 

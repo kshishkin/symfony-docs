@@ -20,14 +20,16 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/form`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/Form).
+* Use the official Git repository (https://github.com/symfony/form).
+
+.. include:: /components/require_autoload.rst.inc
 
 Configuration
 -------------
 
 .. tip::
 
-    If you are working with the full-stack Symfony framework, the Form component
+    If you are working with the full-stack Symfony Framework, the Form component
     is already configured for you. In this case, skip to :ref:`component-form-intro-create-simple-form`.
 
 In Symfony, forms are represented by objects and these objects are built
@@ -61,7 +63,7 @@ factory.
 
 .. tip::
 
-    For a working example, see https://github.com/bschussek/standalone-forms
+    For a working example, see https://github.com/webmozart/standalone-forms
 
 Request Handling
 ~~~~~~~~~~~~~~~~
@@ -77,6 +79,12 @@ method::
 Behind the scenes, this uses a :class:`Symfony\\Component\\Form\\NativeRequestHandler`
 object to read data off of the correct PHP superglobals (i.e. ``$_POST`` or
 ``$_GET``) based on the HTTP method configured on the form (POST is default).
+
+.. seealso::
+
+    If you need more control over exactly when your form is submitted or which
+    data is passed to it, you can use the :method:`Symfony\\Component\\Form\\FormInterface::submit`
+    for this. Read more about it :ref:`in the cookbook <cookbook-form-call-submit-directly>`.
 
 .. sidebar:: Integration with the HttpFoundation Component
 
@@ -132,12 +140,12 @@ above snippet and make sure that nobody except your web server can access
 the secret.
 
 Internally, this extension will automatically add a hidden field to every
-form (called ``__token`` by default) whose value is automatically generated
+form (called ``_token`` by default) whose value is automatically generated
 and validated when binding the form.
 
 .. tip::
 
-    If you're not using the HttpFoundation component, load use
+    If you're not using the HttpFoundation component, you can use
     :class:`Symfony\\Component\\Form\\Extension\\Csrf\\CsrfProvider\\DefaultCsrfProvider`
     instead, which relies on PHP's native session handling::
 
@@ -167,7 +175,7 @@ line to your ``composer.json`` file:
     }
 
 The TwigBridge integration provides you with several :doc:`Twig Functions </reference/forms/twig_reference>`
-that help you render each the HTML widget, label and error for each field
+that help you render the HTML widget, label and error for each field
 (as well as a few other things). To configure the integration, you'll need
 to bootstrap or access Twig and add the :class:`Symfony\\Bridge\\Twig\\Extension\\FormExtension`::
 
@@ -180,17 +188,17 @@ to bootstrap or access Twig and add the :class:`Symfony\\Bridge\\Twig\\Extension
     // this file comes with TwigBridge
     $defaultFormTheme = 'form_div_layout.html.twig';
 
-    $vendorDir = realpath(__DIR__ . '/../vendor');
-    // the path to TwigBridge so Twig can locate the
+    $vendorDir = realpath(__DIR__.'/../vendor');
+    // the path to TwigBridge library so Twig can locate the
     // form_div_layout.html.twig file
-    $vendorTwigBridgeDir =
-        $vendorDir . '/symfony/twig-bridge/Symfony/Bridge/Twig';
+    $appVariableReflection = new \ReflectionClass('\Symfony\Bridge\Twig\AppVariable');
+    $vendorTwigBridgeDir = dirname($appVariableReflection->getFileName());
     // the path to your other templates
-    $viewsDir = realpath(__DIR__ . '/../views');
+    $viewsDir = realpath(__DIR__.'/../views');
 
     $twig = new Twig_Environment(new Twig_Loader_Filesystem(array(
         $viewsDir,
-        $vendorTwigBridgeDir . '/Resources/views/Form',
+        $vendorTwigBridgeDir.'/Resources/views/Form',
     )));
     $formEngine = new TwigRendererEngine(array($defaultFormTheme));
     $formEngine->setEnvironment($twig);
@@ -309,10 +317,10 @@ Your integration with the Validation component will look something like this::
     use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
     use Symfony\Component\Validator\Validation;
 
-    $vendorDir = realpath(__DIR__ . '/../vendor');
-    $vendorFormDir = $vendorDir . '/symfony/form/Symfony/Component/Form';
+    $vendorDir = realpath(__DIR__.'/../vendor');
+    $vendorFormDir = $vendorDir.'/symfony/form/Symfony/Component/Form';
     $vendorValidatorDir =
-        $vendorDir . '/symfony/validator/Symfony/Component/Validator';
+        $vendorDir.'/symfony/validator/Symfony/Component/Validator';
 
     // create the validator - details will vary
     $validator = Validation::createValidator();
@@ -320,13 +328,13 @@ Your integration with the Validation component will look something like this::
     // there are built-in translations for the core error messages
     $translator->addResource(
         'xlf',
-        $vendorFormDir . '/Resources/translations/validators.en.xlf',
+        $vendorFormDir.'/Resources/translations/validators.en.xlf',
         'en',
         'validators'
     );
     $translator->addResource(
         'xlf',
-        $vendorValidatorDir . '/Resources/translations/validators.en.xlf',
+        $vendorValidatorDir.'/Resources/translations/validators.en.xlf',
         'en',
         'validators'
     );
@@ -369,7 +377,7 @@ Creating a simple Form
 
 .. tip::
 
-    If you're using the Symfony framework, then the form factory is available
+    If you're using the Symfony Framework, then the form factory is available
     automatically as a service called ``form.factory``. Also, the default
     base controller class has a :method:`Symfony\\Bundle\\FrameworkBundle\\Controller::createFormBuilder`
     method, which is a shortcut to fetch the form factory and call ``createBuilder``
@@ -388,9 +396,9 @@ is created from the form factory.
             ->add('dueDate', 'date')
             ->getForm();
 
-        echo $twig->render('new.html.twig', array(
+        var_dump($twig->render('new.html.twig', array(
             'form' => $form->createView(),
-        ));
+        )));
 
     .. code-block:: php-symfony
 
@@ -472,13 +480,13 @@ done by passing a special form "view" object to your template (notice the
 ``$form->createView()`` in the controller above) and using a set of form
 helper functions:
 
-.. code-block:: html+jinja
+.. code-block:: html+twig
 
-    <form action="#" method="post" {{ form_enctype(form) }}>
+    {{ form_start(form) }}
         {{ form_widget(form) }}
 
         <input type="submit" />
-    </form>
+    {{ form_end(form) }}
 
 .. image:: /images/book/form-simple.png
     :align: center
@@ -488,6 +496,43 @@ rendered, along with a label and error message (if there is one). As easy
 as this is, it's not very flexible (yet). Usually, you'll want to render each
 form field individually so you can control how the form looks. You'll learn how
 to do that in the ":ref:`form-rendering-template`" section.
+
+Changing a Form's Method and Action
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 2.3
+    The ability to configure the form method and action was introduced in
+    Symfony 2.3.
+
+By default, a form is submitted to the same URI that rendered the form with
+an HTTP POST request. This behavior can be changed using the :ref:`form-option-action`
+and :ref:`form-option-method` options (the ``method`` option is also used
+by ``handleRequest()`` to determine whether a form has been submitted):
+
+.. configuration-block::
+
+    .. code-block:: php-standalone
+
+        $formBuilder = $formFactory->createBuilder('form', null, array(
+            'action' => '/search',
+            'method' => 'GET',
+        ));
+
+        // ...
+
+    .. code-block:: php-symfony
+
+        // ...
+
+        public function searchAction()
+        {
+            $formBuilder = $this->createFormBuilder(null, array(
+                'action' => '/search',
+                'method' => 'GET',
+            ));
+
+            // ...
+        }
 
 .. _component-form-intro-handling-submission:
 
@@ -617,6 +662,35 @@ and the errors will display next to the fields on error.
     For a list of all of the built-in validation constraints, see
     :doc:`/reference/constraints`.
 
+Accessing Form Errors
+~~~~~~~~~~~~~~~~~~~~~
+
+You can use the :method:`Symfony\\Component\\Form\\FormInterface::getErrors`
+method to access the list of errors. Each element is a :class:`Symfony\\Component\\Form\\FormError`
+object::
+
+    $form = ...;
+
+    // ...
+
+    // an array of FormError objects, but only errors attached to this
+    // form level (e.g. "global errors)
+    $errors = $form->getErrors();
+
+    // an array of FormError objects, but only errors attached to the
+    // "firstName" field
+    $errors = $form['firstName']->getErrors();
+
+    // a string representation of all errors of the whole form tree
+    $errors = $form->getErrorsAsString();
+
+.. note::
+
+    If you enable the :ref:`error_bubbling <reference-form-option-error-bubbling>`
+    option on a field, calling ``getErrors()`` on the parent form will include
+    errors from that field. However, there is no way to determine which field
+    an error was originally attached to.
+
 .. _Packagist: https://packagist.org/packages/symfony/form
-.. _Twig:      http://twig.sensiolabs.org
+.. _Twig: http://twig.sensiolabs.org
 .. _`Twig Configuration`: http://twig.sensiolabs.org/doc/intro.html

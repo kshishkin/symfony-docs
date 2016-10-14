@@ -11,6 +11,7 @@ reStructuredText
 reStructuredText is a plaintext markup syntax similar to Markdown, but much
 stricter with its syntax. If you are new to reStructuredText, take some time to
 familiarize with this format by reading the existing `Symfony documentation`_
+source code.
 
 If you want to learn more about this format, check out the `reStructuredText Primer`_
 tutorial and the `reStructuredText Reference`_.
@@ -33,23 +34,14 @@ roles to the standard reST markup. Read more about the `Sphinx Markup Constructs
 Syntax Highlighting
 ~~~~~~~~~~~~~~~~~~~
 
-PHP is the default syntax highlight applied to all code blocks. You can change
-it with the ``code-block`` directive:
+PHP is the default syntax highlighter applied to all code blocks. You can
+change it with the ``code-block`` directive:
 
 .. code-block:: rst
 
     .. code-block:: yaml
 
         { foo: bar, bar: { foo: bar, bar: baz } }
-
-If your PHP code begins with ``<?php``, then you need to use ``html+php`` as
-the name of the highlighted syntax:
-
-.. code-block:: rst
-
-    .. code-block:: html+php
-
-        <?php echo $this->foobar(); ?>
 
 .. note::
 
@@ -101,14 +93,14 @@ The previous reST snippet renders as follow:
 The current list of supported formats are the following:
 
 ===================  ======================================
-Markup format        Use it to display
+Markup Format        Use It to Display
 ===================  ======================================
 ``html``             HTML
 ``xml``              XML
 ``php``              PHP
 ``yaml``             YAML
-``jinja``            Pure Twig markup
-``html+jinja``       Twig markup blended with HTML
+``twig``             Pure Twig markup
+``html+twig``        Twig markup blended with HTML
 ``html+php``         PHP code blended with HTML
 ``ini``              INI
 ``php-annotations``  PHP Annotations
@@ -183,7 +175,7 @@ If you're documenting a brand new feature or a change that's been made in
 Symfony, you should precede your description of the change with a
 ``.. versionadded:: 2.X`` directive and a short description:
 
-.. code-block:: text
+.. code-block:: rst
 
     .. versionadded:: 2.3
         The ``askHiddenResponse`` method was introduced in Symfony 2.3.
@@ -191,9 +183,9 @@ Symfony, you should precede your description of the change with a
     You can also ask a question and hide the response. This is particularly [...]
 
 If you're documenting a behavior change, it may be helpful to *briefly* describe
-how the behavior has changed.
+how the behavior has changed:
 
-.. code-block:: text
+.. code-block:: rst
 
     .. versionadded:: 2.3
         The ``include()`` function is a new Twig feature that's available in
@@ -202,9 +194,9 @@ how the behavior has changed.
 Whenever a new minor version of Symfony is released (e.g. 2.4, 2.5, etc),
 a new branch of the documentation is created from the ``master`` branch.
 At this point, all the ``versionadded`` tags for Symfony versions that have
-reached end-of-life will be removed. For example, if Symfony 2.5 were released
-today, and 2.2 had recently reached its end-of-life, the 2.2 ``versionadded``
-tags would be removed from the new 2.5 branch.
+reached end-of-maintenance will be removed. For example, if Symfony 2.5 were
+released today, and 2.2 had recently reached its end-of-life, the 2.2 ``versionadded``
+tags would be removed from the new ``2.5`` branch.
 
 Testing Documentation
 ~~~~~~~~~~~~~~~~~~~~~
@@ -218,8 +210,7 @@ submitting your documentation, follow these steps:
 
 * Install Sphinx_;
 * Install the Sphinx extensions using git submodules: ``$ git submodule update --init``;
-* (Optionally) Install the bundle docs and CMF docs: ``$ bash install.sh``;
-* Run ``make html`` and view the generated HTML in the ``build/`` directory.
+* Run ``make html`` and view the generated HTML in the ``_build/html`` directory.
 
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx-doc.org/

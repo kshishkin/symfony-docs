@@ -1,5 +1,9 @@
 * :doc:`/components/using_components`
 
+* :doc:`/components/browser_kit/index`
+  
+  * :doc:`/components/browser_kit/introduction`
+
 * :doc:`/components/class_loader/index`
 
   * :doc:`/components/class_loader/introduction`
@@ -21,6 +25,7 @@
   * :doc:`/components/console/introduction`
   * :doc:`/components/console/usage`
   * :doc:`/components/console/single_command_tool`
+  * :doc:`/components/console/console_arguments`
   * :doc:`/components/console/events`
   * :doc:`/components/console/helpers/index`
 
@@ -38,6 +43,7 @@
   * :doc:`/components/dependency_injection/types`
   * :doc:`/components/dependency_injection/parameters`
   * :doc:`/components/dependency_injection/definitions`
+  * :doc:`/components/dependency_injection/synthetic_services`
   * :doc:`/components/dependency_injection/compilation`
   * :doc:`/components/dependency_injection/tags`
   * :doc:`/components/dependency_injection/factories`
@@ -113,6 +119,7 @@
   * :doc:`/components/security/firewall`
   * :doc:`/components/security/authentication`
   * :doc:`/components/security/authorization`
+  * :doc:`/components/security/secure_tools`
 
 * **Serializer**
 

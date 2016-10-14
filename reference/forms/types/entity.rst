@@ -13,14 +13,14 @@ objects from the database.
 | Rendered as | can be various tags (see :ref:`forms-reference-choice-tags`)     |
 +-------------+------------------------------------------------------------------+
 | Options     | - `class`_                                                       |
-|             | - `data_class`_                                                  |
 |             | - `em`_                                                          |
 |             | - `group_by`_                                                    |
 |             | - `property`_                                                    |
 |             | - `query_builder`_                                               |
 +-------------+------------------------------------------------------------------+
-| Overridden  | - `choices`_                                                     |
-| Options     | - `choice_list`_                                                 |
+| Overridden  | - `choice_list`_                                                 |
+| options     | - `choices`_                                                     |
+|             | - `data_class`_                                                  |
 +-------------+------------------------------------------------------------------+
 | Inherited   | from the :doc:`choice </reference/forms/types/choice>` type:     |
 | options     |                                                                  |
@@ -54,32 +54,40 @@ The ``entity`` type has just one required option: the entity which should
 be listed inside the choice field::
 
     $builder->add('users', 'entity', array(
-        'class' => 'AcmeHelloBundle:User',
+        // query choices from this entity
+        'class' => 'AppBundle:User',
+
+        // use the User.username property as the visible option string
         'property' => 'username',
+
+        // used to render a select box, check boxes or radios
+        // 'multiple' => true,
+        // 'expanded' => true,
     ));
 
-In this case, all ``User`` objects will be loaded from the database and rendered
-as either a ``select`` tag, a set or radio buttons or a series of checkboxes
-(this depends on the ``multiple`` and ``expanded`` values).
-If the entity object does not have a ``__toString()`` method the ``property`` option
-is needed.
+This will build a ``select`` drop-down containing *all* of the ``User`` objects
+in the database. To render radio buttons or checkboxes instead, change the
+`multiple`_ and `expanded`_ options.
+
+.. _ref-form-entity-query-builder:
 
 Using a Custom Query for the Entities
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you need to specify a custom query to use when fetching the entities (e.g.
-you only want to return some entities, or need to order them), use the ``query_builder``
-option. The easiest way to use the option is as follows::
+If you want to create a custom query to use when fetching the entities
+(e.g. you only want to return some entities, or need to order them), use
+the `query_builder`_ option::
 
     use Doctrine\ORM\EntityRepository;
     // ...
 
     $builder->add('users', 'entity', array(
-        'class' => 'AcmeHelloBundle:User',
-        'query_builder' => function(EntityRepository $er) {
+        'class' => 'AppBundle:User',
+        'query_builder' => function (EntityRepository $er) {
             return $er->createQueryBuilder('u')
                 ->orderBy('u.username', 'ASC');
         },
+        'property' => 'username',
     ));
 
 .. _reference-forms-entity-choices:
@@ -87,14 +95,15 @@ option. The easiest way to use the option is as follows::
 Using Choices
 ~~~~~~~~~~~~~
 
-If you already have the exact collection of entities that you want included
-in the choice element, you can simply pass them via the ``choices`` key.
+If you already have the exact collection of entities that you want to include
+in the choice element, just pass them via the ``choices`` key.
+
 For example, if you have a ``$group`` variable (passed into your form perhaps
 as a form option) and ``getUsers`` returns a collection of ``User`` entities,
 then you can supply the ``choices`` option directly::
 
     $builder->add('users', 'entity', array(
-        'class' => 'AcmeHelloBundle:User',
+        'class' => 'AppBundle:User',
         'choices' => $group->getUsers(),
     ));
 
@@ -108,11 +117,9 @@ class
 
 **type**: ``string`` **required**
 
-The class of your entity (e.g. ``AcmeStoreBundle:Category``). This can be
-a fully-qualified class name (e.g. ``Acme\StoreBundle\Entity\Category``)
+The class of your entity (e.g. ``AppBundle:Category``). This can be
+a fully-qualified class name (e.g. ``AppBundle\Entity\Category``)
 or the short alias name (as shown prior).
-
-.. include:: /reference/forms/types/options/data_class.rst.inc
 
 em
 ~~
@@ -125,18 +132,18 @@ instead of the default entity manager.
 group_by
 ~~~~~~~~
 
-**type**: ``string``
+**type**: ``string`` **default** ``null``
 
 This is a property path (e.g. ``author.name``) used to organize the
 available choices in groups. It only works when rendered as a select tag
-and does so by adding ``optgroup`` elements around options. Choices that do not
-return a value for this property path are rendered directly under the
-select tag, without a surrounding optgroup.
+and does so by adding ``optgroup`` elements around options. Choices that
+do not return a value for this property path are rendered directly under
+the select tag, without a surrounding optgroup.
 
 property
 ~~~~~~~~
 
-**type**: ``string``
+**type**: ``string`` **default**: ``null``
 
 This is the property that should be used for displaying the entities
 as text in the HTML element. If left blank, the entity object will be
@@ -144,12 +151,12 @@ cast into a string and so must have a ``__toString()`` method.
 
 .. note::
 
-    The ``property`` option is the property path used to display the option. So you
-    can use anything supported by the
+    The ``property`` option is the property path used to display the option.
+    So you can use anything supported by the
     :doc:`PropertyAccessor component </components/property_access/introduction>`
 
-    For example, if the translations property is actually an associative array of
-    objects, each with a name property, then you could do this::
+    For example, if the translations property is actually an associative
+    array of objects, each with a name property, then you could do this::
 
         $builder->add('gender', 'entity', array(
            'class' => 'MyBundle:Gender',
@@ -159,13 +166,15 @@ cast into a string and so must have a ``__toString()`` method.
 query_builder
 ~~~~~~~~~~~~~
 
-**type**: ``Doctrine\ORM\QueryBuilder`` or a Closure
+**type**: ``Doctrine\ORM\QueryBuilder`` or a Closure **default**: ``null``
 
-If specified, this is used to query the subset of options (and their
-order) that should be used for the field. The value of this option can
-either be a ``QueryBuilder`` object or a Closure. If using a Closure,
-it should take a single argument, which is the ``EntityRepository`` of
-the entity.
+Allows you to create a custom query for your choices. See
+:ref:`ref-form-entity-query-builder` for an example.
+
+The value of this option can either be a ``QueryBuilder`` object, a Closure or
+``null`` (which will load all entities). When using a Closure, you will be
+passed the ``EntityRepository`` of the entity as the only argument and should
+return a ``QueryBuilder``.
 
 Overridden Options
 ------------------
@@ -175,24 +184,33 @@ choice_list
 
 **default**: :class:`Symfony\\Bridge\\Doctrine\\Form\\ChoiceList\\EntityChoiceList`
 
-The purpose of the ``entity`` type is to create and configure this ``EntityChoiceList``
-for you, by using all of the above options. If you need to override this
-option, you may just consider using the :doc:`/reference/forms/types/choice`
+The purpose of the ``entity`` type is to create and configure this
+``EntityChoiceList`` for you, by using all of the above options. If you need
+to override this option, you may just consider using the :doc:`/reference/forms/types/choice`
 directly.
 
 choices
 ~~~~~~~
 
-**type**:  array || ``\Traversable`` **default**: ``null``
+**type**:  ``array`` | ``\Traversable`` **default**: ``null``
 
 Instead of allowing the `class`_ and `query_builder`_ options to fetch the
 entities to include for you, you can pass the ``choices`` option directly.
 See :ref:`reference-forms-entity-choices`.
 
+data_class
+~~~~~~~~~~
+
+**type**: ``string`` **default**: ``null``
+
+This option is not used in favor of the ``class`` option which is required
+to query the entities.
+
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`choice </reference/forms/types/choice>` type:
+These options inherit from the :doc:`choice </reference/forms/types/choice>`
+type:
 
 .. include:: /reference/forms/types/options/empty_value.rst.inc
 
@@ -202,19 +220,21 @@ These options inherit from the :doc:`choice </reference/forms/types/choice>` typ
 
 .. note::
 
-    If you are working with a collection of Doctrine entities, it will be helpful
-    to read the documentation for the :doc:`/reference/forms/types/collection`
-    as well. In addition, there is a complete example in the cookbook article
+    If you are working with a collection of Doctrine entities, it will be
+    helpful to read the documentation for the
+    :doc:`/reference/forms/types/collection` as well. In addition, there
+    is a complete example in the cookbook article
     :doc:`/cookbook/form/form_collections`.
 
 .. include:: /reference/forms/types/options/preferred_choices.rst.inc
 
 .. note::
 
-    This option expects an array of entity objects, unlike the ``choice`` field
-    that requires an array of keys.
+    This option expects an array of entity objects, unlike the ``choice``
+    field that requires an array of keys.
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/data.rst.inc
 

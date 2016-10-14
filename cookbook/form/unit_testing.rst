@@ -36,11 +36,11 @@ The Basics
 
 The simplest ``TypeTestCase`` implementation looks like the following::
 
-    // src/Acme/TestBundle/Tests/Form/Type/TestedTypeTest.php
-    namespace Acme\TestBundle\Tests\Form\Type;
+    // src/AppBundle/Tests/Form/Type/TestedTypeTest.php
+    namespace AppBundle\Tests\Form\Type;
 
-    use Acme\TestBundle\Form\Type\TestedType;
-    use Acme\TestBundle\Model\TestObject;
+    use AppBundle\Form\Type\TestedType;
+    use AppBundle\Model\TestObject;
     use Symfony\Component\Form\Test\TypeTestCase;
 
     class TestedTypeTest extends TypeTestCase
@@ -55,8 +55,7 @@ The simplest ``TypeTestCase`` implementation looks like the following::
             $type = new TestedType();
             $form = $this->factory->create($type);
 
-            $object = new TestObject();
-            $object->fromArray($formData);
+            $object = TestObject::fromArray($formData);
 
             // submit the data to the form directly
             $form->submit($formData);
@@ -116,20 +115,20 @@ Adding a Type your Form Depends on
 Your form may depend on other types that are defined as services. It
 might look like this::
 
-    // src/Acme/TestBundle/Form/Type/TestedType.php
+    // src/AppBundle/Form/Type/TestedType.php
 
     // ... the buildForm method
-    $builder->add('acme_test_child_type');
+    $builder->add('app_test_child_type');
 
 To create your form correctly, you need to make the type available to the
 form factory in your test. The easiest way is to register it manually
 before creating the parent form using the ``PreloadedExtension`` class::
 
-    // src/Acme/TestBundle/Tests/Form/Type/TestedTypeTests.php
-    namespace Acme\TestBundle\Tests\Form\Type;
+    // src/AppBundle/Tests/Form/Type/TestedTypeTests.php
+    namespace AppBundle\Tests\Form\Type;
 
-    use Acme\TestBundle\Form\Type\TestedType;
-    use Acme\TestBundle\Model\TestObject;
+    use AppBundle\Form\Type\TestedType;
+    use AppBundle\Model\TestObject;
     use Symfony\Component\Form\Test\TypeTestCase;
     use Symfony\Component\Form\PreloadedExtension;
 
@@ -138,6 +137,7 @@ before creating the parent form using the ``PreloadedExtension`` class::
         protected function getExtensions()
         {
             $childType = new TestChildType();
+
             return array(new PreloadedExtension(array(
                 $childType->getName() => $childType,
             ), array()));
@@ -158,70 +158,55 @@ before creating the parent form using the ``PreloadedExtension`` class::
     be getting errors that are not related to the form you are currently
     testing but to its children.
 
-Adding custom Extensions
+Adding Custom Extensions
 ------------------------
 
 It often happens that you use some options that are added by
 :doc:`form extensions </cookbook/form/create_form_type_extension>`. One of the
 cases may be the ``ValidatorExtension`` with its ``invalid_message`` option.
-The ``TypeTestCase`` loads only the core form extension so an "Invalid option"
-exception will be raised if you try to use it for testing a class that depends
-on other extensions. You need add those extensions to the factory object::
+The ``TypeTestCase`` only loads the core form extension, which means an
+:class:`Symfony\\Component\\OptionsResolver\\Exception\\InvalidOptionsException`
+will be raised if you try to test a class that depends on other extensions.
+The :method:`Symfony\\Component\\Form\\Test\\TypeTestCase::getExtensions` method
+allows you to return a list of extensions to register::
 
-    // src/Acme/TestBundle/Tests/Form/Type/TestedTypeTests.php
-    namespace Acme\TestBundle\Tests\Form\Type;
+    // src/AppBundle/Tests/Form/Type/TestedTypeTests.php
+    namespace AppBundle\Tests\Form\Type;
 
-    use Acme\TestBundle\Form\Type\TestedType;
-    use Acme\TestBundle\Model\TestObject;
-    use Symfony\Component\Form\Test\TypeTestCase;
+    use AppBundle\Form\Type\TestedType;
+    use AppBundle\Model\TestObject;
+    use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
     use Symfony\Component\Form\Forms;
     use Symfony\Component\Form\FormBuilder;
-    use Symfony\Component\Form\Extension\Validator\Type\FormTypeValidatorExtension;
+    use Symfony\Component\Form\Test\TypeTestCase;
     use Symfony\Component\Validator\ConstraintViolationList;
 
     class TestedTypeTest extends TypeTestCase
     {
-        protected function setUp()
+        protected function getExtensions()
         {
-            parent::setUp();
-            
-            $validator = $this->getMock('\Symfony\Component\Validator\ValidatorInterface');
+            $validator = $this->getMock('\Symfony\Component\Validator\Validator\ValidatorInterface');
             $validator->method('validate')->will($this->returnValue(new ConstraintViolationList()));
 
-            $this->factory = Forms::createFormFactoryBuilder()
-                ->addExtensions($this->getExtensions())
-                ->addTypeExtension(
-                    new FormTypeValidatorExtension(
-                        $validator
-                    )
-                )
-                ->addTypeGuesser(
-                    $this->getMockBuilder(
-                        'Symfony\Component\Form\Extension\Validator\ValidatorTypeGuesser'
-                    )
-                        ->disableOriginalConstructor()
-                        ->getMock()
-                )
-                ->getFormFactory();
-
-            $this->dispatcher = $this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
-            $this->builder = new FormBuilder(null, null, $this->dispatcher, $this->factory);
+            return array(
+                new ValidatorExtension($validator),
+            );
         }
 
         // ... your tests
     }
 
-Testing against different Sets of Data
+Testing against Different Sets of Data
 --------------------------------------
 
 If you are not familiar yet with PHPUnit's `data providers`_, this might be
 a good opportunity to use them::
 
-    // src/Acme/TestBundle/Tests/Form/Type/TestedTypeTests.php
-    namespace Acme\TestBundle\Tests\Form\Type;
+    // src/AppBundle/Tests/Form/Type/TestedTypeTests.php
+    namespace AppBundle\Tests\Form\Type;
 
-    use Acme\TestBundle\Form\Type\TestedType;
-    use Acme\TestBundle\Model\TestObject;
+    use AppBundle\Form\Type\TestedType;
+    use AppBundle\Model\TestObject;
     use Symfony\Component\Form\Test\TypeTestCase;
 
     class TestedTypeTest extends TypeTestCase
@@ -264,4 +249,4 @@ easily testing against multiple sets of data.
 You can also pass another argument, such as a boolean if the form has to
 be synchronized with the given set of data or not etc.
 
-.. _`data providers`: http://www.phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers
+.. _`data providers`: https://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers

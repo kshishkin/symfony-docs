@@ -7,8 +7,8 @@ time Field Type
 A field to capture time input.
 
 This can be rendered as a text field, a series of text fields (e.g. hour,
-minute, second) or a series of select fields. The underlying data can be stored
-as a ``DateTime`` object, a string, a timestamp or an array.
+minute, second) or a series of select fields. The underlying data can be
+stored as a ``DateTime`` object, a string, a timestamp or an array.
 
 +----------------------+-----------------------------------------------------------------------------+
 | Underlying Data Type | can be ``DateTime``, string, timestamp, or array (see the ``input`` option) |
@@ -26,7 +26,9 @@ as a ``DateTime`` object, a string, a timestamp or an array.
 |                      | - `with_minutes`_                                                           |
 |                      | - `with_seconds`_                                                           |
 +----------------------+-----------------------------------------------------------------------------+
-| Overridden Options   | - `by_reference`_                                                           |
+| Overridden options   | - `by_reference`_                                                           |
+|                      | - `compound`_                                                               |
+|                      | - `data_class`_                                                             |
 |                      | - `error_bubbling`_                                                         |
 +----------------------+-----------------------------------------------------------------------------+
 | Inherited            | - `data`_                                                                   |
@@ -49,11 +51,9 @@ Basic Usage
 This field type is highly configurable, but easy to use. The most important
 options are ``input`` and ``widget``.
 
-Suppose that you have a ``startTime`` field whose underlying time data is a
-``DateTime`` object. The following configures the ``time`` type for that
-field as two different choice fields:
-
-.. code-block:: php
+Suppose that you have a ``startTime`` field whose underlying time data is
+a ``DateTime`` object. The following configures the ``time`` type for that
+field as two different choice fields::
 
     $builder->add('startTime', 'time', array(
         'input'  => 'datetime',
@@ -62,9 +62,7 @@ field as two different choice fields:
 
 The ``input`` option *must* be changed to match the type of the underlying
 date data. For example, if the ``startTime`` field's data were a unix timestamp,
-you'd need to set ``input`` to ``timestamp``:
-
-.. code-block:: php
+you'd need to set ``input`` to ``timestamp``::
 
     $builder->add('startTime', 'time', array(
         'input'  => 'timestamp',
@@ -86,8 +84,8 @@ input
 
 **type**: ``string`` **default**: ``datetime``
 
-The format of the *input* data - i.e. the format that the date is stored on
-your underlying object. Valid values are:
+The format of the *input* data - i.e. the format that the date is stored
+on your underlying object. Valid values are:
 
 * ``string`` (e.g. ``12:17:26``)
 * ``datetime`` (a ``DateTime`` object)
@@ -110,7 +108,8 @@ widget
 
 **type**: ``string`` **default**: ``choice``
 
-The basic way in which this field should be rendered. Can be one of the following:
+The basic way in which this field should be rendered. Can be one of the
+following:
 
 * ``choice``: renders one, two (default) or three select inputs (hour, minute,
   second), depending on the `with_minutes`_ and `with_seconds`_ options.
@@ -118,14 +117,15 @@ The basic way in which this field should be rendered. Can be one of the followin
 * ``text``: renders one, two (default) or three text inputs (hour, minute,
   second), depending on the `with_minutes`_ and `with_seconds`_ options.
 
-* ``single_text``: renders a single input of type ``time``. User's input will
-  be validated against the form ``hh:mm`` (or ``hh:mm:ss`` if using seconds).
+* ``single_text``: renders a single input of type ``time``. User's input
+  will be validated against the form ``hh:mm`` (or ``hh:mm:ss`` if using
+  seconds).
 
 .. caution::
 
     Combining the widget type ``single_text`` and the `with_minutes`_ option
-    set to ``false`` can cause unexpected behavior in the client as the input
-    type ``time`` might not support selecting an hour only.
+    set to ``false`` can cause unexpected behavior in the client as the
+    input type ``time`` might not support selecting an hour only.
 
 .. include:: /reference/forms/types/options/with_minutes.rst.inc
 
@@ -141,6 +141,10 @@ by_reference
 
 The ``DateTime`` classes are treated as immutable objects.
 
+.. include:: /reference/forms/types/options/compound_type.rst.inc
+
+.. include:: /reference/forms/types/options/data_class_date.rst.inc
+
 error_bubbling
 ~~~~~~~~~~~~~~
 
@@ -149,7 +153,8 @@ error_bubbling
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/data.rst.inc
 
@@ -175,9 +180,9 @@ Form Variables
 +==============+=============+======================================================================+
 | widget       | ``mixed``   | The value of the `widget`_ option.                                   |
 +--------------+-------------+----------------------------------------------------------------------+
-| with_minutes | ``Boolean`` | The value of the `with_minutes`_ option.                             |
+| with_minutes | ``boolean`` | The value of the `with_minutes`_ option.                             |
 +--------------+-------------+----------------------------------------------------------------------+
-| with_seconds | ``Boolean`` | The value of the `with_seconds`_ option.                             |
+| with_seconds | ``boolean`` | The value of the `with_seconds`_ option.                             |
 +--------------+-------------+----------------------------------------------------------------------+
 | type         | ``string``  | Only present when widget is ``single_text`` and HTML5 is activated,  |
 |              |             | contains the input type to use (``datetime``, ``date`` or ``time``). |

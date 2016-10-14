@@ -19,6 +19,9 @@ how the input and output of the data is handled.
 |             | - `grouping`_                                                       |
 |             | - `precision`_                                                      |
 +-------------+---------------------------------------------------------------------+
+| Overridden  | - `compound`_                                                       |
+| options     |                                                                     |
++-------------+---------------------------------------------------------------------+
 | Inherited   | - `data`_                                                           |
 | options     | - `disabled`_                                                       |
 |             | - `empty_data`_                                                     |
@@ -50,8 +53,8 @@ the currency symbol that should be shown by the text box. Depending on
 the currency - the currency symbol may be shown before or after the input
 text field.
 
-This can be any `3 letter ISO 4217 code`_. You can also set this to false to
-hide the currency symbol.
+This can be any `3 letter ISO 4217 code`_. You can also set this to false
+to hide the currency symbol.
 
 divisor
 ~~~~~~~
@@ -83,10 +86,16 @@ you can modify this value. You probably won't need to do this unless,
 for example, you want to round to the nearest dollar (set the precision
 to ``0``).
 
+Overridden Options
+------------------
+
+.. include:: /reference/forms/types/options/compound_type.rst.inc
+
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/data.rst.inc
 
@@ -121,10 +130,10 @@ The default value is ``''`` (the empty string).
 Form Variables
 --------------
 
-============= ========== ===============================================================
-Variable      Type       Usage
-============= ========== ===============================================================
-money_pattern ``string`` The format to use to display the money, including the currency.
-============= ========== ===============================================================
+=============  ==========  ===============================================================
+Variable       Type        Usage
+=============  ==========  ===============================================================
+money_pattern  ``string``  The format to use to display the money, including the currency.
+=============  ==========  ===============================================================
 
-.. _`3 letter ISO 4217 code`: http://en.wikipedia.org/wiki/ISO_4217
+.. _`3 letter ISO 4217 code`: https://en.wikipedia.org/wiki/ISO_4217

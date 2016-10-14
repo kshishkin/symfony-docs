@@ -4,7 +4,7 @@
 Switching the Profiler Storage
 ==============================
 
-By default the profile stores the collected data in files in the cache directory.
+By default the profile stores the collected data in files in the ``%kernel.cache_dir%/profiler/`` directory.
 You can control the storage being used through the ``dsn``, ``username``,
 ``password`` and ``lifetime`` options. For example, the following configuration
 uses MySQL as the storage for the profiler with a lifetime of one hour:
@@ -15,11 +15,11 @@ uses MySQL as the storage for the profiler with a lifetime of one hour:
 
         # app/config/config.yml
         framework:
-        profiler:
-            dsn:      "mysql:host=localhost;dbname=%database_name%"
-            username: "%database_user%"
-            password: "%database_password%"
-            lifetime: 3600
+            profiler:
+                dsn:      'mysql:host=localhost;dbname=%database_name%'
+                username: '%database_user%'
+                password: '%database_password%'
+                lifetime: 3600
 
     .. code-block:: xml
 
@@ -58,12 +58,12 @@ uses MySQL as the storage for the profiler with a lifetime of one hour:
         ));
 
 The :doc:`HttpKernel component </components/http_kernel/introduction>` currently
-supports the following profiler storage implementations:
+supports the following profiler storage drivers:
 
-* :class:`Symfony\\Component\\HttpKernel\\Profiler\\FileProfilerStorage`
-* :class:`Symfony\\Component\\HttpKernel\\Profiler\\MemcachedProfilerStorage`
-* :class:`Symfony\\Component\\HttpKernel\\Profiler\\MemcacheProfilerStorage`
-* :class:`Symfony\\Component\\HttpKernel\\Profiler\\MongoDbProfilerStorage`
-* :class:`Symfony\\Component\\HttpKernel\\Profiler\\MysqlProfilerStorage`
-* :class:`Symfony\\Component\\HttpKernel\\Profiler\\RedisProfilerStorage`
-* :class:`Symfony\\Component\\HttpKernel\\Profiler\\SqliteProfilerStorage`
+* file
+* sqlite
+* mysql
+* mongodb
+* memcache
+* memcached
+* redis

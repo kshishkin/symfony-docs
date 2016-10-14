@@ -2,14 +2,14 @@ Image
 =====
 
 The Image constraint works exactly like the :doc:`File </reference/constraints/File>`
-constraint, except that its `mimeTypes`_ and `mimeTypesMessage` options are
-automatically setup to work for image files specifically.
+constraint, except that its `mimeTypes`_ and `mimeTypesMessage`_ options
+are automatically setup to work for image files specifically.
 
 Additionally, as of Symfony 2.1, it has options so you can validate against
 the width and height of the image.
 
-See the :doc:`File </reference/constraints/File>` constraint for the bulk of
-the documentation on this constraint.
+See the :doc:`File </reference/constraints/File>` constraint for the bulk
+of the documentation on this constraint.
 
 +----------------+-----------------------------------------------------------------------+
 | Applies to     | :ref:`property or method <validation-property-target>`                |
@@ -36,13 +36,13 @@ Basic Usage
 -----------
 
 This constraint is most commonly used on a property that will be rendered
-in a form as a :doc:`file </reference/forms/types/file>` form type. For example,
-suppose you're creating an author form where you can upload a "headshot"
-image for the author. In your form, the ``headshot`` property would be a
-``file`` type. The ``Author`` class might look as follows::
+in a form as a :doc:`file </reference/forms/types/file>` form type. For
+example, suppose you're creating an author form where you can upload a
+"headshot" image for the author. In your form, the ``headshot`` property
+would be a ``file`` type. The ``Author`` class might look as follows::
 
-    // src/Acme/BlogBundle/Entity/Author.php
-    namespace Acme\BlogBundle\Entity;
+    // src/AppBundle/Entity/Author.php
+    namespace AppBundle\Entity;
 
     use Symfony\Component\HttpFoundation\File\File;
 
@@ -61,27 +61,15 @@ image for the author. In your form, the ``headshot`` property would be a
         }
     }
 
-To guarantee that the ``headshot`` ``File`` object is a valid image and that
-it is between a certain size, add the following:
+To guarantee that the ``headshot`` ``File`` object is a valid image and
+that it is between a certain size, add the following:
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/BlogBundle/Resources/config/validation.yml
-        Acme\BlogBundle\Entity\Author
-            properties:
-                headshot:
-                    - Image:
-                        minWidth: 200
-                        maxWidth: 400
-                        minHeight: 200
-                        maxHeight: 400
-
     .. code-block:: php-annotations
 
-        // src/Acme/BlogBundle/Entity/Author.php
-        namespace Acme\BlogBundle\Entity;
+        // src/AppBundle/Entity/Author.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Constraints as Assert;
 
@@ -98,15 +86,27 @@ it is between a certain size, add the following:
             protected $headshot;
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Author:
+            properties:
+                headshot:
+                    - Image:
+                        minWidth: 200
+                        maxWidth: 400
+                        minHeight: 200
+                        maxHeight: 400
+
     .. code-block:: xml
 
-        <!-- src/Acme/BlogBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\BlogBundle\Entity\Author">
+            <class name="AppBundle\Entity\Author">
                 <property name="headshot">
                     <constraint name="Image">
                         <option name="minWidth">200</option>
@@ -120,8 +120,8 @@ it is between a certain size, add the following:
 
     .. code-block:: php
 
-        // src/Acme/BlogBundle/Entity/Author.php
-        namespace Acme\BlogBundle\Entity;
+        // src/AppBundle/Entity/Author.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Mapping\ClassMetadata;
         use Symfony\Component\Validator\Constraints\Image;

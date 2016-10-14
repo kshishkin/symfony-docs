@@ -15,7 +15,7 @@ software:
 
 * Git;
 * PHP version 5.3.3 or above;
-* PHPUnit 3.6.4 or above.
+* `PHPUnit`_ 4.2 or above.
 
 Configure Git
 ~~~~~~~~~~~~~
@@ -105,9 +105,14 @@ Choose the right Branch
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Before working on a patch, you must determine on which branch you need to
-work. The branch should be based on the ``master`` branch if you want to add a
-new feature. But if you want to fix a bug, use the oldest but still maintained
-version of Symfony where the bug happens (like ``2.3``).
+work:
+
+* ``2.3``, if you are fixing a bug for an existing feature or want to make a
+  change that falls into the :doc:`list of acceptable changes in patch versions
+  </contributing/code/maintenance>` (you may have to choose a higher branch if
+  the feature you are fixing was introduced in a later version);
+
+ * ``master``, if you are adding a new feature.
 
 .. note::
 
@@ -166,9 +171,6 @@ in mind the following:
 
 * Do atomic and logically separate commits (use the power of ``git rebase`` to
   have a clean and logical history);
-
-* Squash irrelevant commits that are just about fixing coding standards or
-  fixing typos in your own code;
 
 * Never fix coding standards in some existing code as it makes the code review
   more difficult;
@@ -246,6 +248,8 @@ Check that all tests still pass and push your branch remotely:
 
     $ git push --force origin BRANCH_NAME
 
+.. _contributing-code-pull-request:
+
 Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
 
@@ -264,49 +268,10 @@ pull request message, like in:
     [Yaml] fixed something
     [Form] [Validator] [FrameworkBundle] added something
 
-The pull request description must include the following checklist at the top
-to ensure that contributions may be reviewed without needless feedback
-loops and that your contributions can be included into Symfony as quickly as
-possible:
-
-.. code-block:: text
-
-    | Q             | A
-    | ------------- | ---
-    | Bug fix?      | [yes|no]
-    | New feature?  | [yes|no]
-    | BC breaks?    | [yes|no]
-    | Deprecations? | [yes|no]
-    | Tests pass?   | [yes|no]
-    | Fixed tickets | [comma separated list of tickets fixed by the PR]
-    | License       | MIT
-    | Doc PR        | [The reference to the documentation PR if any]
-
-An example submission could now look as follows:
-
-.. code-block:: text
-
-    | Q             | A
-    | ------------- | ---
-    | Bug fix?      | no
-    | New feature?  | no
-    | BC breaks?    | no
-    | Deprecations? | no
-    | Tests pass?   | yes
-    | Fixed tickets | #12, #43
-    | License       | MIT
-    | Doc PR        | symfony/symfony-docs#123
-
-The whole table must be included (do **not** remove lines that you think are
-not relevant). For simple typos, minor changes in the PHPDocs, or changes in
-translation files, use the shorter version of the check-list:
-
-.. code-block:: text
-
-    | Q             | A
-    | ------------- | ---
-    | Fixed tickets | [comma separated list of tickets fixed by the PR]
-    | License       | MIT
+The default pull request description contains a table which you must fill in
+with the appropriate answers. This ensures that contributions may be reviewed
+without needless feedback loops and that your contributions can be included into
+Symfony as quickly as possible.
 
 Some answers to the questions trigger some more requirements:
 
@@ -377,37 +342,21 @@ patch. Before re-submitting the patch, rebase with ``upstream/master`` or
     to avoid messing other branches in the repo (``--force`` tells Git that
     you really want to mess with things so do it carefully).
 
-Often, moderators will ask you to "squash" your commits. This means you will
-convert many commits to one commit. To do this, use the rebase command:
+Moderators earlier asked you to "squash" your commits. This means you will
+convert many commits to one commit. This is no longer necessary today, because
+Symfony project uses a proprietary tool which automatically squashes all commits
+before merging.
 
-.. code-block:: bash
-
-    $ git rebase -i upstream/master
-    $ git push --force origin BRANCH_NAME
-
-After you type this command, an editor will popup showing a list of commits:
-
-.. code-block:: text
-
-    pick 1a31be6 first commit
-    pick 7fc64b4 second commit
-    pick 7d33018 third commit
-
-To squash all commits into the first one, remove the word ``pick`` before the
-second and the last commits, and replace it by the word ``squash`` or just
-``s``. When you save, Git will start rebasing, and if successful, will ask
-you to edit the commit message, which by default is a listing of the commit
-messages of all the commits. When you are finished, execute the push command.
-
-.. _ProGit:                                http://git-scm.com/book
-.. _GitHub:                                https://github.com/signup/free
-.. _`GitHub's Documentation`:              https://help.github.com/articles/ignoring-files
-.. _Symfony repository:                    https://github.com/symfony/symfony
-.. _dev mailing-list:                      http://groups.google.com/group/symfony-devs
-.. _travis-ci.org:                         https://travis-ci.org/
-.. _`travis-ci.org status icon`:           http://about.travis-ci.org/docs/user/status-images/
+.. _ProGit: http://git-scm.com/book
+.. _GitHub: https://github.com/join
+.. _`GitHub's Documentation`: https://help.github.com/articles/ignoring-files
+.. _Symfony repository: https://github.com/symfony/symfony
+.. _dev mailing-list: http://groups.google.com/group/symfony-devs
+.. _travis-ci.org: https://travis-ci.org/
+.. _`travis-ci.org status icon`: http://about.travis-ci.org/docs/user/status-images/
 .. _`travis-ci.org Getting Started Guide`: http://about.travis-ci.org/docs/user/getting-started/
-.. _`documentation repository`:            https://github.com/symfony/symfony-docs
-.. _`fabbot`:                              http://fabbot.io
-.. _`PSR-1`:                               http://www.php-fig.org/psr/psr-1/
-.. _`PSR-2`:                               http://www.php-fig.org/psr/psr-2/
+.. _`documentation repository`: https://github.com/symfony/symfony-docs
+.. _`fabbot`: http://fabbot.io
+.. _`PSR-1`: http://www.php-fig.org/psr/psr-1/
+.. _`PSR-2`: http://www.php-fig.org/psr/psr-2/
+.. _PHPUnit: https://phpunit.de/manual/current/en/installation.html

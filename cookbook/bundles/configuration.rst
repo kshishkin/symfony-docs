@@ -6,13 +6,13 @@ How to Create Friendly Configuration for a Bundle
 =================================================
 
 If you open your application configuration file (usually ``app/config/config.yml``),
-you'll see a number of different configuration "namespaces", such as ``framework``,
+you'll see a number of different configuration sections, such as ``framework``,
 ``twig`` and ``doctrine``. Each of these configures a specific bundle, allowing
-you to configure things at a high level and then let the bundle make all the
+you to define options at a high level and then let the bundle make all the
 low-level, complex changes based on your settings.
 
-For example, the following tells the FrameworkBundle to enable the form
-integration, which involves the definition of quite a few services as well
+For example, the following configuration tells the FrameworkBundle to enable the
+form integration, which involves the definition of quite a few services as well
 as integration of other related components:
 
 .. configuration-block::
@@ -75,7 +75,7 @@ bundle configuration would look like:
         acme_social:
             twitter:
                 client_id: 123
-                client_secret: $ecret
+                client_secret: your_secret
 
     .. code-block:: xml
 
@@ -88,7 +88,7 @@ bundle configuration would look like:
                 http://symfony.com/schema/dic/services/services-1.0.xsd">
 
            <acme-social:config>
-               <twitter client-id="123" client-secret="$ecret" />
+               <twitter client-id="123" client-secret="your_secret" />
            </acme-social:config>
 
            <!-- ... -->
@@ -99,7 +99,7 @@ bundle configuration would look like:
         // app/config/config.php
         $container->loadFromExtension('acme_social', array(
             'client_id'     => 123,
-            'client_secret' => '$ecret',
+            'client_secret' => 'your_secret',
         ));
 
 .. seealso::
@@ -117,7 +117,7 @@ bundle configuration would look like:
 
 .. seealso::
 
-    For parameter handling within a Dependency Injection class see
+    For parameter handling within a dependency injection container see
     :doc:`/cookbook/configuration/using_parameters_in_dic`.
 
 
@@ -129,7 +129,7 @@ First things first, you have to create an extension class as explained in
 
 Whenever a user includes the ``acme_social`` key (which is the DI alias) in a
 configuration file, the configuration under it is added to an array of
-configurations and passed to the ``load()`` method of your extension (Symfony2
+configurations and passed to the ``load()`` method of your extension (Symfony
 automatically converts XML and YAML to an array).
 
 For the configuration example in the previous section, the array passed to your
@@ -139,7 +139,7 @@ For the configuration example in the previous section, the array passed to your
         array(
             'twitter' => array(
                 'client_id' => 123,
-                'client_secret' => '$ecret',
+                'client_secret' => 'your_secret',
             ),
         ),
     )
@@ -155,7 +155,7 @@ beneath it, the incoming array might look like this::
         array(
             'twitter' => array(
                 'client_id' => 123,
-                'client_secret' => '$secret',
+                'client_secret' => 'your_secret',
             ),
         ),
         // values from config_dev.yml
@@ -210,7 +210,7 @@ The ``Configuration`` class to handle the sample configuration looks like::
     supporting "prototype" nodes, advanced validation, XML-specific normalization
     and advanced merging. You can read more about this in
     :doc:`the Config component documentation </components/config/definition>`. You
-    can also see it in action by checking out some of the core Configuration
+    can also see it in action by checking out some core Configuration
     classes, such as the one from the `FrameworkBundle Configuration`_ or the
     `TwigBundle Configuration`_.
 
@@ -227,7 +227,7 @@ thrown)::
     }
 
 The ``processConfiguration()`` method uses the configuration tree you've defined
-in the ``Configuration`` class to validate, normalize and merge all of the
+in the ``Configuration`` class to validate, normalize and merge all the
 configuration arrays together.
 
 .. tip::
@@ -253,7 +253,7 @@ configuration arrays together.
         }
 
     This class uses the ``getConfiguration()`` method to get the Configuration
-    instance, you should override it if your Configuration class is not called
+    instance. You should override it if your Configuration class is not called
     ``Configuration`` or if it is not placed in the same namespace as the
     extension.
 
@@ -294,8 +294,8 @@ The ``config:dump-reference`` command dumps the default configuration of a
 bundle in the console using the Yaml format.
 
 As long as your bundle's configuration is located in the standard location
-(``YourBundle\DependencyInjection\Configuration``) and does not require
-arguments to be passed to the constructor it will work automatically. If you
+(``YourBundle\DependencyInjection\Configuration``) and does not have
+a constructor it will work automatically. If you
 have something different, your ``Extension`` class must override the
 :method:`Extension::getConfiguration() <Symfony\\Component\\HttpKernel\\DependencyInjection\\Extension::getConfiguration>`
 method and return an instance of your ``Configuration``.
@@ -353,7 +353,7 @@ In order to use the schema, the XML configuration file must provide an
 ``xsi:schemaLocation`` attribute pointing to the XSD file for a certain XML
 namespace. This location always starts with the XML namespace. This XML
 namespace is then replaced with the XSD validation base path returned from
-:method:`Extension::getXsdValidationBasePath() <Symfony\\Component\\DependencyInjection\\ExtensionInterface::getXsdValidationBasePath>`
+:method:`Extension::getXsdValidationBasePath() <Symfony\\Component\\DependencyInjection\\Extension\\ExtensionInterface::getXsdValidationBasePath>`
 method. This namespace is then followed by the rest of the path from the base
 path to the file itself.
 
@@ -373,7 +373,7 @@ can place it anywhere you like. You should return this path as the base path::
         }
     }
 
-Assume the XSD file is called ``hello-1.0.xsd``, the schema location will be
+Assuming the XSD file is called ``hello-1.0.xsd``, the schema location will be
 ``http://acme_company.com/schema/dic/hello/hello-1.0.xsd``:
 
 .. code-block:: xml
@@ -384,7 +384,8 @@ Assume the XSD file is called ``hello-1.0.xsd``, the schema location will be
     <container xmlns="http://symfony.com/schema/dic/services"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:acme-hello="http://acme_company.com/schema/dic/hello"
-        xsi:schemaLocation="http://acme_company.com/schema/dic/hello http://acme_company.com/schema/dic/hello/hello-1.0.xsd">
+        xsi:schemaLocation="http://acme_company.com/schema/dic/hello
+            http://acme_company.com/schema/dic/hello/hello-1.0.xsd">
 
         <acme-hello:config>
             <!-- ... -->
@@ -395,5 +396,5 @@ Assume the XSD file is called ``hello-1.0.xsd``, the schema location will be
 
 .. _`FrameworkBundle Configuration`: https://github.com/symfony/symfony/blob/master/src/Symfony/Bundle/FrameworkBundle/DependencyInjection/Configuration.php
 .. _`TwigBundle Configuration`: https://github.com/symfony/symfony/blob/master/src/Symfony/Bundle/TwigBundle/DependencyInjection/Configuration.php
-.. _`XML namespace`: http://en.wikipedia.org/wiki/XML_namespace
-.. _`XML schema`: http://en.wikipedia.org/wiki/XML_schema
+.. _`XML namespace`: https://en.wikipedia.org/wiki/XML_namespace
+.. _`XML schema`: https://en.wikipedia.org/wiki/XML_schema

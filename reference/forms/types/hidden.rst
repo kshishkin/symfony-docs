@@ -9,8 +9,9 @@ The hidden type represents a hidden input field.
 +-------------+----------------------------------------------------------------------+
 | Rendered as | ``input`` ``hidden`` field                                           |
 +-------------+----------------------------------------------------------------------+
-| Overriden   | - `error_bubbling`_                                                  |
-| options     | - `required`_                                                        |
+| Overriden   | - `compound`_                                                        |
+| options     | - `error_bubbling`_                                                  |
+|             | - `required`_                                                        |
 +-------------+----------------------------------------------------------------------+
 | Inherited   | - `data`_                                                            |
 | options     | - `error_mapping`_                                                   |
@@ -24,6 +25,8 @@ The hidden type represents a hidden input field.
 
 Overridden Options
 ------------------
+
+.. include:: /reference/forms/types/options/compound_type.rst.inc
 
 error_bubbling
 ~~~~~~~~~~~~~~
@@ -42,7 +45,8 @@ Hidden fields cannot have a required attribute.
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/data.rst.inc
 

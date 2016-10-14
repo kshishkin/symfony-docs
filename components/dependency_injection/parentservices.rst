@@ -1,12 +1,13 @@
 .. index::
-   single: DependencyInjection; Parent services
+    single: DependencyInjection; Parent services
 
-Managing common Dependencies with parent Services
+Managing Common Dependencies with Parent Services
 =================================================
 
-As you add more functionality to your application, you may well start to have
-related classes that share some of the same dependencies. For example you
-may have a Newsletter Manager which uses setter injection to set its dependencies::
+As you add more functionality to your application, you may well start to
+have related classes that share some of the same dependencies. For example,
+you may have a Newsletter Manager which uses setter injection to set its
+dependencies::
 
     class NewsletterManager
     {
@@ -52,11 +53,6 @@ The service config for these classes would look something like this:
 
     .. code-block:: yaml
 
-        parameters:
-            # ...
-            newsletter_manager.class: NewsletterManager
-            greeting_card_manager.class: GreetingCardManager
-
         services:
             my_mailer:
                 # ...
@@ -65,16 +61,16 @@ The service config for these classes would look something like this:
                 # ...
 
             newsletter_manager:
-                class: "%newsletter_manager.class%"
+                class: NewsletterManager
                 calls:
-                    - [setMailer, ["@my_mailer"]]
-                    - [setEmailFormatter, ["@my_email_formatter"]]
+                    - [setMailer, ['@my_mailer']]
+                    - [setEmailFormatter, ['@my_email_formatter']]
 
             greeting_card_manager:
-                class: "%greeting_card_manager.class%"
+                class: GreetingCardManager
                 calls:
-                    - [setMailer, ["@my_mailer"]]
-                    - [setEmailFormatter, ["@my_email_formatter"]]
+                    - [setMailer, ['@my_mailer']]
+                    - [setEmailFormatter, ['@my_email_formatter']]
 
     .. code-block:: xml
 
@@ -82,12 +78,6 @@ The service config for these classes would look something like this:
         <container xmlns="http://symfony.com/schema/dic/services"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
-
-            <parameters>
-                <!-- ... -->
-                <parameter key="newsletter_manager.class">NewsletterManager</parameter>
-                <parameter key="greeting_card_manager.class">GreetingCardManager</parameter>
-            </parameters>
 
             <services>
                 <service id="my_mailer">
@@ -98,7 +88,7 @@ The service config for these classes would look something like this:
                     <!-- ... -->
                 </service>
 
-                <service id="newsletter_manager" class="%newsletter_manager.class%">
+                <service id="newsletter_manager" class="NewsletterManager">
                     <call method="setMailer">
                         <argument type="service" id="my_mailer" />
                     </call>
@@ -107,7 +97,7 @@ The service config for these classes would look something like this:
                     </call>
                 </service>
 
-                <service id="greeting_card_manager" class="%greeting_card_manager.class%">
+                <service id="greeting_card_manager" class="GreetingCardManager">
                     <call method="setMailer">
                         <argument type="service" id="my_mailer" />
                     </call>
@@ -124,14 +114,11 @@ The service config for these classes would look something like this:
         use Symfony\Component\DependencyInjection\Reference;
 
         // ...
-        $container->setParameter('newsletter_manager.class', 'NewsletterManager');
-        $container->setParameter('greeting_card_manager.class', 'GreetingCardManager');
-
         $container->register('my_mailer', ...);
         $container->register('my_email_formatter', ...);
 
         $container
-            ->register('newsletter_manager', '%newsletter_manager.class%')
+            ->register('newsletter_manager', 'NewsletterManager')
             ->addMethodCall('setMailer', array(
                 new Reference('my_mailer'),
             ))
@@ -141,7 +128,7 @@ The service config for these classes would look something like this:
         ;
 
         $container
-            ->register('greeting_card_manager', '%greeting_card_manager.class%')
+            ->register('greeting_card_manager', 'GreetingCardManager')
             ->addMethodCall('setMailer', array(
                 new Reference('my_mailer'),
             ))
@@ -150,12 +137,13 @@ The service config for these classes would look something like this:
             ))
         ;
 
-There is a lot of repetition in both the classes and the configuration. This
-means that if you changed, for example, the ``Mailer`` of ``EmailFormatter``
-classes to be injected via the constructor, you would need to update the config
-in two places. Likewise if you needed to make changes to the setter methods
-you would need to do this in both classes. The typical way to deal with the
-common methods of these related classes would be to extract them to a super class::
+There is a lot of repetition in both the classes and the configuration.
+This means that if you changed, for example, the ``Mailer`` of
+``EmailFormatter`` classes to be injected via the constructor, you would
+need to update the config in two places. Likewise if you needed to make
+changes to the setter methods you would need to do this in both classes.
+The typical way to deal with the common methods of these related classes
+would be to extract them to a super class::
 
     abstract class MailManager
     {
@@ -204,15 +192,15 @@ a parent for a service.
             mail_manager:
                 abstract:  true
                 calls:
-                    - [setMailer, ["@my_mailer"]]
-                    - [setEmailFormatter, ["@my_email_formatter"]]
+                    - [setMailer, ['@my_mailer']]
+                    - [setEmailFormatter, ['@my_email_formatter']]
 
             newsletter_manager:
-                class:  "%newsletter_manager.class%"
+                class:  NewsletterManager
                 parent: mail_manager
 
             greeting_card_manager:
-                class:  "%greeting_card_manager.class%"
+                class:  GreetingCardManager
                 parent: mail_manager
 
     .. code-block:: xml
@@ -237,12 +225,12 @@ a parent for a service.
 
                 <service
                     id="newsletter_manager"
-                    class="%newsletter_manager.class%"
+                    class="NewsletterManager"
                     parent="mail_manager" />
 
                 <service
                     id="greeting_card_manager"
-                    class="%greeting_card_manager.class%"
+                    class="GreetingCardManager"
                     parent="mail_manager" />
             </services>
         </container>
@@ -267,17 +255,17 @@ a parent for a service.
         $container->setDefinition('mail_manager', $mailManager);
 
         $newsletterManager = new DefinitionDecorator('mail_manager');
-        $newsletterManager->setClass('%newsletter_manager.class%');
+        $newsletterManager->setClass('NewsletterManager');
         $container->setDefinition('newsletter_manager', $newsletterManager);
 
         $greetingCardManager = new DefinitionDecorator('mail_manager');
-        $greetingCardManager->setClass('%greeting_card_manager.class%');
+        $greetingCardManager->setClass('GreetingCardManager');
         $container->setDefinition('greeting_card_manager', $greetingCardManager);
 
-In this context, having a ``parent`` service implies that the arguments and
-method calls of the parent service should be used for the child services.
-Specifically, the setter methods defined for the parent service will be called
-when the child services are instantiated.
+In this context, having a ``parent`` service implies that the arguments
+and method calls of the parent service should be used for the child services.
+Specifically, the setter methods defined for the parent service will be
+called when the child services are instantiated.
 
 .. note::
 
@@ -289,19 +277,19 @@ when the child services are instantiated.
 
 .. caution::
 
-   The ``scope``, ``abstract`` and ``tags`` attributes are always taken from
-   the child service.
+   The ``scope``, ``abstract`` and ``tags`` attributes are always taken
+   from the child service.
 
-The parent service is abstract as it should not be directly retrieved from the
-container or passed into another service. It exists merely as a "template" that
-other services can use. This is why it can have no ``class`` configured which
-would cause an exception to be raised for a non-abstract service.
+The parent service is abstract as it should not be directly retrieved from
+the container or passed into another service. It exists merely as a "template"
+that other services can use. This is why it can have no ``class`` configured
+which would cause an exception to be raised for a non-abstract service.
 
 .. note::
 
-   In order for parent dependencies to resolve, the ``ContainerBuilder`` must
-   first be compiled. See :doc:`/components/dependency_injection/compilation`
-   for more details.
+   In order for parent dependencies to resolve, the ``ContainerBuilder``
+   must first be compiled. See
+   :doc:`/components/dependency_injection/compilation` for more details.
 
 .. tip::
 
@@ -310,7 +298,7 @@ would cause an exception to be raised for a non-abstract service.
     You can just extract common parts of similar service definitions into
     a parent service without also extending a parent class in PHP.
 
-Overriding parent Dependencies
+Overriding Parent Dependencies
 ------------------------------
 
 There may be times where you want to override what class is passed in for
@@ -332,17 +320,17 @@ to the ``NewsletterManager`` class, the config would look like this:
             mail_manager:
                 abstract: true
                 calls:
-                    - [setMailer, ["@my_mailer"]]
-                    - [setEmailFormatter, ["@my_email_formatter"]]
+                    - [setMailer, ['@my_mailer']]
+                    - [setEmailFormatter, ['@my_email_formatter']]
 
             newsletter_manager:
-                class:  "%newsletter_manager.class%"
+                class:  NewsletterManager
                 parent: mail_manager
                 calls:
-                    - [setMailer, ["@my_alternative_mailer"]]
+                    - [setMailer, ['@my_alternative_mailer']]
 
             greeting_card_manager:
-                class:  "%greeting_card_manager.class%"
+                class:  GreetingCardManager
                 parent: mail_manager
 
     .. code-block:: xml
@@ -371,7 +359,7 @@ to the ``NewsletterManager`` class, the config would look like this:
 
                 <service
                     id="newsletter_manager"
-                    class="%newsletter_manager.class%"
+                    class="NewsletterManager"
                     parent="mail_manager">
 
                     <call method="setMailer">
@@ -381,7 +369,7 @@ to the ``NewsletterManager`` class, the config would look like this:
 
                 <service
                     id="greeting_card_manager"
-                    class="%greeting_card_manager.class%"
+                    class="GreetingCardManager"
                     parent="mail_manager" />
             </services>
         </container>
@@ -397,7 +385,7 @@ to the ``NewsletterManager`` class, the config would look like this:
 
         $mailManager = new Definition();
         $mailManager
-            ->setAbstract(true);
+            ->setAbstract(true)
             ->addMethodCall('setMailer', array(
                 new Reference('my_mailer'),
             ))
@@ -408,7 +396,7 @@ to the ``NewsletterManager`` class, the config would look like this:
         $container->setDefinition('mail_manager', $mailManager);
 
         $newsletterManager = new DefinitionDecorator('mail_manager');
-        $newsletterManager->setClass('%newsletter_manager.class%');
+        $newsletterManager->setClass('NewsletterManager');
             ->addMethodCall('setMailer', array(
                 new Reference('my_alternative_mailer'),
             ))
@@ -416,7 +404,7 @@ to the ``NewsletterManager`` class, the config would look like this:
         $container->setDefinition('newsletter_manager', $newsletterManager);
 
         $greetingCardManager = new DefinitionDecorator('mail_manager');
-        $greetingCardManager->setClass('%greeting_card_manager.class%');
+        $greetingCardManager->setClass('GreetingCardManager');
         $container->setDefinition('greeting_card_manager', $greetingCardManager);
 
 The ``GreetingCardManager`` will receive the same dependencies as before,
@@ -425,10 +413,10 @@ instead of the ``my_mailer`` service.
 
 .. caution::
 
-    You can't override method calls. When you defined new method calls in the child
-    service, it'll be added to the current set of configured method calls. This means
-    it works perfectly when the setter overrides the current property, but it doesn't
-    work as expected when the setter appends it to the existing data (e.g. an
-    ``addFilters()`` method).
-    In those cases, the only solution is to *not* extend the parent service and configuring
+    You can't override method calls. When you defined new method calls in
+    the child service, it'll be added to the current set of configured method
+    calls. This means it works perfectly when the setter overrides the current
+    property, but it doesn't work as expected when the setter appends it
+    to the existing data (e.g. an ``addFilters()`` method). In those cases,
+    the only solution is to *not* extend the parent service and configuring
     the service just like you did before knowing this feature.

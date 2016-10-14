@@ -4,12 +4,12 @@
 language Field Type
 ===================
 
-The ``language`` type is a subset of the ``ChoiceType`` that allows the user
-to select from a large list of languages. As an added bonus, the language names
-are displayed in the language of the user.
+The ``language`` type is a subset of the ``ChoiceType`` that allows the
+user to select from a large list of languages. As an added bonus, the language
+names are displayed in the language of the user.
 
-The "value" for each language is the *Unicode language identifier*
-(e.g. ``fr`` or ``zh-Hant``).
+The "value" for each language is the *Unicode language identifier* used
+in the `International Components for Unicode`_ (e.g. ``fr`` or ``zh_Hant``).
 
 .. note::
 
@@ -24,7 +24,7 @@ you should just use the ``choice`` type directly.
 | Rendered as | can be various tags (see :ref:`forms-reference-choice-tags`)           |
 +-------------+------------------------------------------------------------------------+
 | Overridden  | - `choices`_                                                           |
-| Options     |                                                                        |
+| options     |                                                                        |
 +-------------+------------------------------------------------------------------------+
 | Inherited   | from the :doc:`choice </reference/forms/types/choice>` type            |
 | options     |                                                                        |
@@ -65,7 +65,8 @@ The default locale is used to translate the languages names.
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`choice </reference/forms/types/choice>` type:
+These options inherit from the :doc:`choice </reference/forms/types/choice>`
+type:
 
 .. include:: /reference/forms/types/options/empty_value.rst.inc
 
@@ -79,7 +80,8 @@ These options inherit from the :doc:`choice </reference/forms/types/choice>` typ
 
 .. include:: /reference/forms/types/options/preferred_choices.rst.inc
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/data.rst.inc
 
@@ -106,3 +108,5 @@ The actual default value of this option depends on other field options:
 .. include:: /reference/forms/types/options/read_only.rst.inc
 
 .. include:: /reference/forms/types/options/required.rst.inc
+
+.. _`International Components for Unicode`: http://site.icu-project.org

@@ -16,43 +16,48 @@ talked about briefly.
 Install UglifyJS
 ----------------
 
-UglifyJS is available as an `Node.js`_ npm module and can be installed using
-npm. First, you need to `install Node.js`_. Afterwards you can install UglifyJS
-using npm:
+UglifyJS is available as a `Node.js`_ module. First, you need to `install Node.js`_
+and then, decide the installation method: global or local.
+
+Global Installation
+~~~~~~~~~~~~~~~~~~~
+
+The global installation method makes all your projects use the very same UglifyJS
+version, which simplifies its maintenance. Open your command console and execute
+the following command (you may need to run it as a root user):
 
 .. code-block:: bash
 
     $ npm install -g uglify-js
 
-This command will install UglifyJS globally and you may need to run it as
-a root user.
-
-.. note::
-
-    It's also possible to install UglifyJS inside your project only. To do
-    this, install it without the ``-g`` option and specify the path where
-    to put the module:
-
-    .. code-block:: bash
-
-        $ cd /path/to/symfony
-        $ mkdir app/Resources/node_modules
-        $ npm install uglify-js --prefix app/Resources
-
-    It is recommended that you install UglifyJS in your ``app/Resources`` folder
-    and add the ``node_modules`` folder to version control. Alternatively,
-    you can create an npm `package.json`_ file and specify your dependencies
-    there.
-
-Depending on your installation method, you should either be able to execute
-the ``uglifyjs`` executable globally, or execute the physical file that lives
-in the ``node_modules`` directory:
+Now you can execute the global ``uglifyjs`` command anywhere on your system:
 
 .. code-block:: bash
 
     $ uglifyjs --help
 
-    $ ./app/Resources/node_modules/.bin/uglifyjs --help
+Local Installation
+~~~~~~~~~~~~~~~~~~
+
+It's also possible to install UglifyJS inside your project only, which is useful
+when your project requires a specific UglifyJS version. To do this, install it
+without the ``-g`` option and specify the path where to put the module:
+
+.. code-block:: bash
+
+    $ cd /path/to/your/symfony/project
+    $ npm install uglify-js --prefix app/Resources
+
+It is recommended that you install UglifyJS in your ``app/Resources`` folder and
+add the ``node_modules`` folder to version control. Alternatively, you can create
+an npm `package.json`_ file and specify your dependencies there.
+
+Now you can execute the ``uglifyjs`` command that lives in the ``node_modules``
+directory:
+
+.. code-block:: bash
+
+    $ "./app/Resources/node_modules/.bin/uglifyjs" --help
 
 Configure the ``uglifyjs2`` Filter
 ----------------------------------
@@ -74,12 +79,22 @@ your JavaScripts:
     .. code-block:: xml
 
         <!-- app/config/config.xml -->
-        <assetic:config>
-            <!-- bin: the path to the uglifyjs executable -->
-            <assetic:filter
-                name="uglifyjs2"
-                bin="/usr/local/bin/uglifyjs" />
-        </assetic:config>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:assetic="http://symfony.com/schema/dic/assetic"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/assetic
+                http://symfony.com/schema/dic/assetic/assetic-1.0.xsd">
+
+            <assetic:config>
+                <!-- bin: the path to the uglifyjs executable -->
+                <assetic:filter
+                    name="uglifyjs2"
+                    bin="/usr/local/bin/uglifyjs" />
+            </assetic:config>
+        </container>
 
     .. code-block:: php
 
@@ -96,8 +111,7 @@ your JavaScripts:
 .. note::
 
     The path where UglifyJS is installed may vary depending on your system.
-    To find out where npm stores the ``bin`` folder, you can use the following
-    command:
+    To find out where npm stores the ``bin`` folder, execute the following command:
 
     .. code-block:: bash
 
@@ -133,12 +147,22 @@ can configure its location using the ``node`` key:
     .. code-block:: xml
 
         <!-- app/config/config.xml -->
-        <assetic:config 
-            node="/usr/bin/nodejs" >
-            <assetic:filter
-                name="uglifyjs2"
-                bin="/usr/local/bin/uglifyjs" />
-        </assetic:config>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:assetic="http://symfony.com/schema/dic/assetic"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/assetic
+                http://symfony.com/schema/dic/assetic/assetic-1.0.xsd">
+
+            <assetic:config
+                node="/usr/bin/nodejs" >
+                <assetic:filter
+                    name="uglifyjs2"
+                    bin="/usr/local/bin/uglifyjs" />
+            </assetic:config>
+        </container>
 
     .. code-block:: php
 
@@ -154,32 +178,31 @@ can configure its location using the ``node`` key:
 Minify your Assets
 ------------------
 
-In order to use UglifyJS on your assets, you need to apply it to them. Since
-your assets are a part of the view layer, this work is done in your templates:
+In order to apply UglifyJS on your assets, add the ``filter`` option in the
+asset tags of your templates to tell Assetic to use the ``uglifyjs2`` filter:
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
-        {% javascripts '@AcmeFooBundle/Resources/public/js/*' filter='uglifyjs2' %}
+        {% javascripts '@AppBundle/Resources/public/js/*' filter='uglifyjs2' %}
             <script src="{{ asset_url }}"></script>
         {% endjavascripts %}
 
     .. code-block:: html+php
 
         <?php foreach ($view['assetic']->javascripts(
-            array('@AcmeFooBundle/Resources/public/js/*'),
+            array('@AppBundle/Resources/public/js/*'),
             array('uglifyj2s')
         ) as $url): ?>
             <script src="<?php echo $view->escape($url) ?>"></script>
-        <?php endforeach; ?>
+        <?php endforeach ?>
 
 .. note::
 
-    The above example assumes that you have a bundle called ``AcmeFooBundle``
-    and your JavaScript files are in the ``Resources/public/js`` directory under
-    your bundle. This isn't important however - you can include your JavaScript
-    files no matter where they are.
+    The above example assumes that you have a bundle called AppBundle and your
+    JavaScript files are in the ``Resources/public/js`` directory under your
+    bundle. However you can include your JavaScript files no matter where they are.
 
 With the addition of the ``uglifyjs2`` filter to the asset tags above, you
 should now see minified JavaScripts coming over the wire much faster.
@@ -195,20 +218,20 @@ apply this filter when debug mode is off (e.g. ``app.php``):
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
-        {% javascripts '@AcmeFooBundle/Resources/public/js/*' filter='?uglifyjs2' %}
+        {% javascripts '@AppBundle/Resources/public/js/*' filter='?uglifyjs2' %}
             <script src="{{ asset_url }}"></script>
         {% endjavascripts %}
 
     .. code-block:: html+php
 
         <?php foreach ($view['assetic']->javascripts(
-            array('@AcmeFooBundle/Resources/public/js/*'),
+            array('@AppBundle/Resources/public/js/*'),
             array('?uglifyjs2')
         ) as $url): ?>
             <script src="<?php echo $view->escape($url) ?>"></script>
-        <?php endforeach; ?>
+        <?php endforeach ?>
 
 To try this out, switch to your ``prod`` environment (``app.php``). But before
 you do, don't forget to :ref:`clear your cache <book-page-creation-prod-cache-clear>`
@@ -216,12 +239,9 @@ and :ref:`dump your assetic assets <cookbook-assetic-dump-prod>`.
 
 .. tip::
 
-    Instead of adding the filter to the asset tags, you can also globally
-    enable it by adding the ``apply_to`` attribute to the filter configuration, for
-    example in the ``uglifyjs2`` filter ``apply_to: "\.js$"``. To only have
-    the filter applied in production, add this to the ``config_prod`` file
-    rather than the common config file. For details on applying filters by
-    file extension, see :ref:`cookbook-assetic-apply-to`.
+    Instead of adding the filters to the asset tags, you can also configure which
+    filters to apply for each file in your application configuration file.
+    See :ref:`cookbook-assetic-apply-to` for more details.
 
 Install, Configure and Use UglifyCSS
 ------------------------------------
@@ -231,7 +251,12 @@ the node package is installed:
 
 .. code-block:: bash
 
+    # global installation
     $ npm install -g uglifycss
+
+    # local installation
+    $ cd /path/to/your/symfony/project
+    $ npm install uglifycss --prefix app/Resources
 
 Next, add the configuration for this filter:
 
@@ -248,11 +273,21 @@ Next, add the configuration for this filter:
     .. code-block:: xml
 
         <!-- app/config/config.xml -->
-        <assetic:config>
-            <assetic:filter
-                name="uglifycss"
-                bin="/usr/local/bin/uglifycss" />
-        </assetic:config>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:assetic="http://symfony.com/schema/dic/assetic"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/assetic
+                http://symfony.com/schema/dic/assetic/assetic-1.0.xsd">
+
+            <assetic:config>
+                <assetic:filter
+                    name="uglifycss"
+                    bin="/usr/local/bin/uglifycss" />
+            </assetic:config>
+        </container>
 
     .. code-block:: php
 
@@ -270,21 +305,21 @@ helper:
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
-        {% stylesheets 'bundles/AcmeFoo/css/*' filter='uglifycss' filter='cssrewrite' %}
+        {% stylesheets 'bundles/App/css/*' filter='uglifycss' filter='cssrewrite' %}
              <link rel="stylesheet" href="{{ asset_url }}" />
         {% endstylesheets %}
 
     .. code-block:: html+php
 
         <?php foreach ($view['assetic']->stylesheets(
-            array('bundles/AcmeFoo/css/*'),
+            array('bundles/App/css/*'),
             array('uglifycss'),
             array('cssrewrite')
         ) as $url): ?>
             <link rel="stylesheet" href="<?php echo $view->escape($url) ?>" />
-        <?php endforeach; ?>
+        <?php endforeach ?>
 
 Just like with the ``uglifyjs2`` filter, if you prefix the filter name with
 ``?`` (i.e. ``?uglifycss``), the minification will only happen when you're
@@ -292,6 +327,6 @@ not in debug mode.
 
 .. _`UglifyJS`: https://github.com/mishoo/UglifyJS
 .. _`UglifyCSS`: https://github.com/fmarcia/UglifyCSS
-.. _`Node.js`: http://nodejs.org/
-.. _`install Node.js`: http://nodejs.org/
-.. _`package.json`: http://package.json.nodejitsu.com/
+.. _`Node.js`: https://nodejs.org/
+.. _`install Node.js`: https://nodejs.org/
+.. _`package.json`: http://browsenpm.org/package.json

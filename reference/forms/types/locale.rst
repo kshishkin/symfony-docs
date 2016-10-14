@@ -26,7 +26,7 @@ you should just use the ``choice`` type directly.
 | Rendered as | can be various tags (see :ref:`forms-reference-choice-tags`)           |
 +-------------+------------------------------------------------------------------------+
 | Overridden  | - `choices`_                                                           |
-| Options     |                                                                        |
+| options     |                                                                        |
 +-------------+------------------------------------------------------------------------+
 | Inherited   | from the :doc:`choice </reference/forms/types/choice>` type            |
 | options     |                                                                        |
@@ -67,7 +67,8 @@ specify the language.
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`choice </reference/forms/types/choice>` type:
+These options inherit from the :doc:`choice </reference/forms/types/choice>`
+type:
 
 .. include:: /reference/forms/types/options/empty_value.rst.inc
 
@@ -81,7 +82,8 @@ These options inherit from the :doc:`choice </reference/forms/types/choice>` typ
 
 .. include:: /reference/forms/types/options/preferred_choices.rst.inc
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/data.rst.inc
 
@@ -109,5 +111,5 @@ The actual default value of this option depends on other field options:
 
 .. include:: /reference/forms/types/options/required.rst.inc
 
-.. _`ISO 639-1`: http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-.. _`ISO 3166-1 alpha-2`: http://en.wikipedia.org/wiki/ISO_3166-1#Current_codes
+.. _`ISO 639-1`: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+.. _`ISO 3166-1 alpha-2`: https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes

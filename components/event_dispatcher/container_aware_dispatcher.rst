@@ -7,14 +7,15 @@ The Container Aware Event Dispatcher
 Introduction
 ------------
 
-The :class:`Symfony\\Component\\EventDispatcher\\ContainerAwareEventDispatcher` is
-a special EventDispatcher implementation which is coupled to the service container
-that is part of :doc:`the DependencyInjection component </components/dependency_injection/introduction>`.
-It allows services to be specified as event listeners making the EventDispatcher
+The :class:`Symfony\\Component\\EventDispatcher\\ContainerAwareEventDispatcher`
+is a special ``EventDispatcher`` implementation which is coupled to the
+service container that is part of
+:doc:`the DependencyInjection component </components/dependency_injection/introduction>`.
+It allows services to be specified as event listeners making the ``EventDispatcher``
 extremely powerful.
 
-Services are lazy loaded meaning the services attached as listeners will only be
-created if an event is dispatched that requires those listeners.
+Services are lazy loaded meaning the services attached as listeners will
+only be created if an event is dispatched that requires those listeners.
 
 Setup
 -----
@@ -31,11 +32,11 @@ into the :class:`Symfony\\Component\\EventDispatcher\\ContainerAwareEventDispatc
 Adding Listeners
 ----------------
 
-The *Container Aware EventDispatcher* can either load specified services
-directly, or services that implement :class:`Symfony\\Component\\EventDispatcher\\EventSubscriberInterface`.
+The ``ContainerAwareEventDispatcher`` can either load specified services
+directly or services that implement :class:`Symfony\\Component\\EventDispatcher\\EventSubscriberInterface`.
 
-The following examples assume the service container has been loaded with any
-services that are mentioned.
+The following examples assume the service container has been loaded with
+any services that are mentioned.
 
 .. note::
 
@@ -53,7 +54,7 @@ method where the ``$callback`` is an array of ``array($serviceId, $methodName)``
 Adding Subscriber Services
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``EventSubscribers`` can be added using the
+Event subscribers can be added using the
 :method:`Symfony\\Component\\EventDispatcher\\ContainerAwareEventDispatcher::addSubscriberService`
 method where the first argument is the service ID of the subscriber service,
 and the second argument is the service's class name (which must implement
@@ -64,9 +65,10 @@ and the second argument is the service's class name (which must implement
         'StoreSubscriber'
     );
 
-The ``EventSubscriberInterface`` will be exactly as you would expect::
+The ``EventSubscriberInterface`` is exactly as you would expect::
 
     use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+    use Symfony\Component\HttpKernel\KernelEvents;
     // ...
 
     class StoreSubscriber implements EventSubscriberInterface
@@ -74,7 +76,7 @@ The ``EventSubscriberInterface`` will be exactly as you would expect::
         public static function getSubscribedEvents()
         {
             return array(
-                'kernel.response' => array(
+                KernelEvents::RESPONSE => array(
                     array('onKernelResponsePre', 10),
                     array('onKernelResponsePost', 0),
                 ),

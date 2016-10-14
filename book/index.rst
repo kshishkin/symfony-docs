@@ -11,6 +11,8 @@ The Book
     controller
     routing
     templating
+    configuration
+    bundles
     doctrine
     propel
     testing
@@ -21,7 +23,5 @@ The Book
     translation
     service_container
     performance
-    internals
-    stable_api
 
 .. include:: /book/map.rst.inc

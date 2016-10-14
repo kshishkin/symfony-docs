@@ -20,8 +20,8 @@ If you need to actually execute a query, you will need to boot the kernel
 to get a valid connection. In this case, you'll extend the ``WebTestCase``,
 which makes all of this quite easy::
 
-    // src/Acme/StoreBundle/Tests/Entity/ProductRepositoryFunctionalTest.php
-    namespace Acme\StoreBundle\Tests\Entity;
+    // src/AppBundle/Tests/Entity/ProductRepositoryFunctionalTest.php
+    namespace AppBundle\Tests\Entity;
 
     use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -35,7 +35,7 @@ which makes all of this quite easy::
         /**
          * {@inheritDoc}
          */
-        public function setUp()
+        protected function setUp()
         {
             static::$kernel = static::createKernel();
             static::$kernel->boot();
@@ -48,7 +48,7 @@ which makes all of this quite easy::
         public function testSearchByCategoryName()
         {
             $products = $this->em
-                ->getRepository('AcmeStoreBundle:Product')
+                ->getRepository('AppBundle:Product')
                 ->searchByCategoryName('foo')
             ;
 
@@ -61,6 +61,8 @@ which makes all of this quite easy::
         protected function tearDown()
         {
             parent::tearDown();
+
             $this->em->close();
+            $this->em = null; // avoid memory leaks
         }
     }

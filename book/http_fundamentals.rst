@@ -14,7 +14,7 @@ applications, while staying out of your way. Symfony is built on the best
 ideas from many technologies: the tools and concepts you're about to learn
 represent the efforts of thousands of people, over many years. In other words,
 you're not just learning "Symfony", you're learning the fundamentals of the
-web, development best practices, and how to use many amazing new PHP libraries,
+web, development best practices and how to use many amazing new PHP libraries,
 inside or independently of Symfony. So, get ready.
 
 True to the Symfony philosophy, this chapter begins by explaining the fundamental
@@ -33,12 +33,12 @@ takes place:
    :align: center
 
 And while the actual language used is a bit more formal, it's still dead-simple.
-HTTP is the term used to describe this simple text-based language. And no
-matter how you develop on the web, the goal of your server is *always* to
-understand simple text requests, and return simple text responses.
+HTTP is the term used to describe this simple text-based language. No matter
+how you develop on the web, the goal of your server is *always* to understand
+simple text requests, and return simple text responses.
 
-Symfony is built from the ground-up around that reality. Whether you realize
-it or not, HTTP is something you use everyday. With Symfony, you'll learn
+Symfony is built from the ground up around that reality. Whether you realize
+it or not, HTTP is something you use every day. With Symfony, you'll learn
 how to master it.
 
 .. index::
@@ -48,7 +48,7 @@ Step1: The Client Sends a Request
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Every conversation on the web starts with a *request*. The request is a text
-message created by a client (e.g. a browser, an iPhone app, etc) in a
+message created by a client (e.g. a browser, a smartphone app, etc) in a
 special format known as HTTP. The client sends that request to a server,
 and then waits for the response.
 
@@ -96,9 +96,11 @@ delete a specific blog entry, for example:
 
 .. note::
 
-    There are actually nine HTTP methods defined by the HTTP specification,
-    but many of them are not widely used or supported. In reality, many modern
-    browsers don't support the ``PUT`` and ``DELETE`` methods.
+    There are actually nine HTTP methods (also known as verbs) defined by
+    the HTTP specification, but many of them are not widely used or supported.
+    In reality, many modern browsers only support ``POST`` and ``GET`` in 
+    HTML forms. Various others are however supported in XMLHttpRequests,
+    as well as by Symfony's router.  
 
 In addition to the first line, an HTTP request invariably contains other
 lines of information called request headers. The headers can supply a wide
@@ -147,8 +149,7 @@ known as HTTP headers. For example, one important HTTP response header is
 ``Content-Type``. The body of the same resource could be returned in multiple
 different formats like HTML, XML, or JSON and the ``Content-Type`` header uses
 Internet Media Types like ``text/html`` to tell the client which format is
-being returned. A list of common media types can be found on Wikipedia's
-`List of common media types`_ article.
+being returned. You can see a `list of common media types`_ from IANA.
 
 Many other headers exist, some of which are very powerful. For example, certain
 headers can be used to create a powerful caching system.
@@ -161,7 +162,7 @@ communication on the web. And as important and powerful as this process is,
 it's inescapably simple.
 
 The most important fact is this: regardless of the language you use, the
-type of application you build (web, mobile, JSON API), or the development
+type of application you build (web, mobile, JSON API) or the development
 philosophy you follow, the end goal of an application is **always** to understand
 each request and create and return the appropriate response.
 
@@ -186,7 +187,7 @@ PHP? In reality, PHP abstracts you a bit from the whole process::
     $uri = $_SERVER['REQUEST_URI'];
     $foo = $_GET['foo'];
 
-    header('Content-type: text/html');
+    header('Content-Type: text/html');
     echo 'The URI requested is: '.$uri;
     echo 'The value of the "foo" parameter is: '.$foo;
 
@@ -242,8 +243,8 @@ have all the request information at your fingertips::
     $request->headers->get('host');
     $request->headers->get('content_type');
 
-    $request->getMethod();          // GET, POST, PUT, DELETE, HEAD
-    $request->getLanguages();       // an array of languages the client accepts
+    $request->getMethod();    // GET, POST, PUT, DELETE, HEAD
+    $request->getLanguages(); // an array of languages the client accepts
 
 As a bonus, the ``Request`` class does a lot of work in the background that
 you'll never need to worry about. For example, the ``isSecure()`` method
@@ -266,7 +267,7 @@ the user is connecting via a secured connection (i.e. HTTPS).
 
     The Request class also has a public ``attributes`` property, which holds
     special data related to how the application works internally. For the
-    Symfony framework, the ``attributes`` holds the values returned by the
+    Symfony Framework, the ``attributes`` holds the values returned by the
     matched route, like ``_controller``, ``id`` (if you have an ``{id}``
     wildcard), and even the name of the matched route (``_route``). The
     ``attributes`` property exists entirely to be a place where you can
@@ -277,6 +278,7 @@ an HTTP response message. This allows your application to use an object-oriented
 interface to construct the response that needs to be returned to the client::
 
     use Symfony\Component\HttpFoundation\Response;
+
     $response = new Response();
 
     $response->setContent('<html><body><h1>Hello world!</h1></body></html>');
@@ -366,12 +368,13 @@ on that value. This can get ugly quickly::
     // index.php
     use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\HttpFoundation\Response;
+
     $request = Request::createFromGlobals();
     $path = $request->getPathInfo(); // the URI path being requested
 
     if (in_array($path, array('', '/'))) {
         $response = new Response('Welcome to the homepage.');
-    } elseif ($path == '/contact') {
+    } elseif ('/contact' === $path) {
         $response = new Response('Contact us');
     } else {
         $response = new Response('Page not found.', 404);
@@ -427,11 +430,11 @@ by adding an entry for ``/contact`` to your routing configuration file:
         # app/config/routing.yml
         contact:
             path:     /contact
-            defaults: { _controller: AcmeDemoBundle:Main:contact }
+            defaults: { _controller: AppBundle:Main:contact }
 
     .. code-block:: xml
 
-        <!-- app/config/config.xml -->
+        <!-- app/config/routing.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <routes xmlns="http://symfony.com/schema/routing"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -439,7 +442,7 @@ by adding an entry for ``/contact`` to your routing configuration file:
                 http://symfony.com/schema/routing/routing-1.0.xsd">
 
             <route id="contact" path="/contact">
-                <default key="_controller">AcmeDemoBundle:Main:contact</default>
+                <default key="_controller">AppBundle:Main:contact</default>
             </route>
         </routes>
 
@@ -451,24 +454,18 @@ by adding an entry for ``/contact`` to your routing configuration file:
 
         $collection = new RouteCollection();
         $collection->add('contact', new Route('/contact', array(
-            '_controller' => 'AcmeDemoBundle:Main:contact',
+            '_controller' => 'AppBundle:Main:contact',
         )));
 
         return $collection;
 
-.. note::
-
-   This example uses :doc:`YAML </components/yaml/yaml_format>` to define the routing
-   configuration. Routing configuration can also be written in other formats
-   such as XML or PHP.
-
 When someone visits the ``/contact`` page, this route is matched, and the
 specified controller is executed. As you'll learn in the :doc:`routing chapter </book/routing>`,
-the ``AcmeDemoBundle:Main:contact`` string is a short syntax that points to a
+the ``AppBundle:Main:contact`` string is a short syntax that points to a
 specific PHP method ``contactAction`` inside a class called ``MainController``::
 
-    // src/Acme/DemoBundle/Controller/MainController.php
-    namespace Acme\DemoBundle\Controller;
+    // src/AppBundle/Controller/MainController.php
+    namespace AppBundle\Controller;
 
     use Symfony\Component\HttpFoundation\Response;
 
@@ -491,8 +488,8 @@ email messages.
 
 .. _symfony2-build-your-app-not-your-tools:
 
-Symfony: Build your App, not your Tools.
-----------------------------------------
+Symfony: Build your App, not your Tools
+---------------------------------------
 
 You now know that the goal of any app is to interpret each incoming request
 and create an appropriate response. As an application grows, it becomes more
@@ -504,7 +501,7 @@ emails, validating user input and handling security.
 The good news is that none of these problems is unique. Symfony provides
 a framework full of tools that allow you to build your application, not your
 tools. With Symfony, nothing is imposed on you: you're free to use the full
-Symfony framework, or just one piece of Symfony all by itself.
+Symfony Framework, or just one piece of Symfony all by itself.
 
 .. index::
    single: Symfony Components
@@ -519,37 +516,36 @@ libraries that can be used inside *any* PHP project. These libraries, called
 the *Symfony Components*, contain something useful for almost any situation,
 regardless of how your project is developed. To name a few:
 
-* :doc:`HttpFoundation </components/http_foundation/introduction>` - Contains
-  the ``Request`` and ``Response`` classes, as well as other classes for handling
-  sessions and file uploads;
+:doc:`HttpFoundation </components/http_foundation/introduction>`
+    Contains the ``Request`` and ``Response`` classes, as well as other classes for
+    handling sessions and file uploads.
 
-* :doc:`Routing </components/routing/introduction>` - Powerful and fast routing system that
-  allows you to map a specific URI (e.g. ``/contact``) to some information
-  about how that request should be handled (e.g. execute the ``contactAction()``
-  method);
+:doc:`Routing </components/routing/introduction>`
+    Powerful and fast routing system that allows you to map a specific URI
+    (e.g. ``/contact``) to some information about how that request should be handled
+    (e.g. execute the ``contactAction()`` method).
 
-* `Form`_ - A full-featured and flexible framework for creating forms and
-  handling form submissions;
+:doc:`Form </components/form/introduction>`
+    A full-featured and flexible framework for creating forms and handling form
+    submissions.
 
-* `Validator`_ - A system for creating rules about data and then validating
-  whether or not user-submitted data follows those rules;
+`Validator`_
+    A system for creating rules about data and then validating whether or not
+    user-submitted data follows those rules.
 
-* :doc:`ClassLoader </components/class_loader/introduction>` - An autoloading library that allows
-  PHP classes to be used without needing to manually ``require`` the files
-  containing those classes;
+:doc:`Templating </components/templating/introduction>`
+    A toolkit for rendering templates, handling template inheritance (i.e. a
+    template is decorated with a layout) and performing other common template tasks.
 
-* :doc:`Templating </components/templating/introduction>` - A toolkit for rendering
-  templates, handling template inheritance (i.e. a template is decorated with
-  a layout) and performing other common template tasks;
+:doc:`Security </components/security/introduction>`
+    A powerful library for handling all types of security inside an application.
 
-* `Security`_ - A powerful library for handling all types of security inside
-  an application;
+:doc:`Translation </components/translation/introduction>`
+    A framework for translating strings in your application.
 
-* `Translation`_ - A framework for translating strings in your application.
-
-Each and every one of these components is decoupled and can be used in *any*
-PHP project, regardless of whether or not you use the Symfony framework.
-Every part is made to be used if needed and replaced when necessary.
+Each one of these components is decoupled and can be used in *any* PHP project,
+regardless of whether or not you use the Symfony Framework. Every part is
+made to be used if needed and replaced when necessary.
 
 .. _the-full-solution-the-symfony2-framework:
 
@@ -579,11 +575,8 @@ sensible defaults. For more advanced users, the sky is the limit.
 .. _`HTTP 1.1 RFC`: http://www.w3.org/Protocols/rfc2616/rfc2616.html
 .. _`HTTP Bis`: http://datatracker.ietf.org/wg/httpbis/
 .. _`Live HTTP Headers`: https://addons.mozilla.org/en-US/firefox/addon/live-http-headers/
-.. _`List of HTTP status codes`: http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
-.. _`List of HTTP header fields`: http://en.wikipedia.org/wiki/List_of_HTTP_header_fields
-.. _`List of common media types`: http://en.wikipedia.org/wiki/Internet_media_type#List_of_common_media_types
-.. _`Form`: https://github.com/symfony/Form
-.. _`Validator`: https://github.com/symfony/Validator
-.. _`Security`: https://github.com/symfony/Security
-.. _`Translation`: https://github.com/symfony/Translation
+.. _`List of HTTP status codes`: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+.. _`List of HTTP header fields`: https://en.wikipedia.org/wiki/List_of_HTTP_header_fields
+.. _`list of common media types`: https://www.iana.org/assignments/media-types/media-types.xhtml
+.. _`Validator`: https://github.com/symfony/validator
 .. _`Swift Mailer`: http://swiftmailer.org/

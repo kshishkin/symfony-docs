@@ -4,20 +4,21 @@
 How to Minify JavaScripts and Stylesheets with YUI Compressor
 =============================================================
 
+.. caution::
+
+    The YUI Compressor is `no longer maintained by Yahoo`_. That's why you are
+    **strongly advised to avoid using YUI utilities** unless strictly necessary.
+    Read :doc:`/cookbook/assetic/uglifyjs` for a modern and up-to-date alternative.
+
 Yahoo! provides an excellent utility for minifying JavaScripts and stylesheets
 so they travel over the wire faster, the `YUI Compressor`_. Thanks to Assetic,
 you can take advantage of this tool very easily.
-
-.. caution::
-
-    The YUI Compressor is going through a `deprecation process`_. But don't
-    worry! See :doc:`/cookbook/assetic/uglifyjs` for an alternative.
 
 Download the YUI Compressor JAR
 -------------------------------
 
 The YUI Compressor is written in Java and distributed as a JAR. `Download the JAR`_
-from the Yahoo! site and save it to ``app/Resources/java/yuicompressor.jar``.
+from the Yahoo! website and save it to ``app/Resources/java/yuicompressor.jar``.
 
 Configure the YUI Filters
 -------------------------
@@ -32,24 +33,34 @@ stylesheets:
 
         # app/config/config.yml
         assetic:
-            # java: "/usr/bin/java"
+            # java: '/usr/bin/java'
             filters:
                 yui_css:
-                    jar: "%kernel.root_dir%/Resources/java/yuicompressor.jar"
+                    jar: '%kernel.root_dir%/Resources/java/yuicompressor.jar'
                 yui_js:
-                    jar: "%kernel.root_dir%/Resources/java/yuicompressor.jar"
+                    jar: '%kernel.root_dir%/Resources/java/yuicompressor.jar'
 
     .. code-block:: xml
 
         <!-- app/config/config.xml -->
-        <assetic:config>
-            <assetic:filter
-                name="yui_css"
-                jar="%kernel.root_dir%/Resources/java/yuicompressor.jar" />
-            <assetic:filter
-                name="yui_js"
-                jar="%kernel.root_dir%/Resources/java/yuicompressor.jar" />
-        </assetic:config>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:assetic="http://symfony.com/schema/dic/assetic"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/assetic
+                http://symfony.com/schema/dic/assetic/assetic-1.0.xsd">
+
+            <assetic:config>
+                <assetic:filter
+                    name="yui_css"
+                    jar="%kernel.root_dir%/Resources/java/yuicompressor.jar" />
+                <assetic:filter
+                    name="yui_js"
+                    jar="%kernel.root_dir%/Resources/java/yuicompressor.jar" />
+            </assetic:config>
+        </container>
 
     .. code-block:: php
 
@@ -84,26 +95,26 @@ the view layer, this work is done in your templates:
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
-        {% javascripts '@AcmeFooBundle/Resources/public/js/*' filter='yui_js' %}
+        {% javascripts '@AppBundle/Resources/public/js/*' filter='yui_js' %}
             <script src="{{ asset_url }}"></script>
         {% endjavascripts %}
 
     .. code-block:: html+php
 
         <?php foreach ($view['assetic']->javascripts(
-            array('@AcmeFooBundle/Resources/public/js/*'),
+            array('@AppBundle/Resources/public/js/*'),
             array('yui_js')
         ) as $url): ?>
             <script src="<?php echo $view->escape($url) ?>"></script>
-        <?php endforeach; ?>
+        <?php endforeach ?>
 
 .. note::
 
-    The above example assumes that you have a bundle called ``AcmeFooBundle``
-    and your JavaScript files are in the ``Resources/public/js`` directory under
-    your bundle. This isn't important however - you can include your JavaScript
+    The above example assumes that you have a bundle called AppBundle and your
+    JavaScript files are in the ``Resources/public/js`` directory under your
+    bundle. This isn't important however - you can include your JavaScript
     files no matter where they are.
 
 With the addition of the ``yui_js`` filter to the asset tags above, you should
@@ -112,25 +123,25 @@ can be repeated to minify your stylesheets.
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
-        {% stylesheets '@AcmeFooBundle/Resources/public/css/*' filter='yui_css' %}
+        {% stylesheets '@AppBundle/Resources/public/css/*' filter='yui_css' %}
             <link rel="stylesheet" type="text/css" media="screen" href="{{ asset_url }}" />
         {% endstylesheets %}
 
     .. code-block:: html+php
 
         <?php foreach ($view['assetic']->stylesheets(
-            array('@AcmeFooBundle/Resources/public/css/*'),
+            array('@AppBundle/Resources/public/css/*'),
             array('yui_css')
         ) as $url): ?>
             <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $view->escape($url) ?>" />
-        <?php endforeach; ?>
+        <?php endforeach ?>
 
 Disable Minification in Debug Mode
 ----------------------------------
 
-Minified JavaScripts and Stylesheets are very difficult to read, let alone
+Minified JavaScripts and stylesheets are very difficult to read, let alone
 debug. Because of this, Assetic lets you disable a certain filter when your
 application is in debug mode. You can do this by prefixing the filter name
 in your template with a question mark: ``?``. This tells Assetic to only
@@ -138,20 +149,20 @@ apply this filter when debug mode is off.
 
 .. configuration-block::
 
-    .. code-block:: html+jinja
+    .. code-block:: html+twig
 
-        {% javascripts '@AcmeFooBundle/Resources/public/js/*' filter='?yui_js' %}
+        {% javascripts '@AppBundle/Resources/public/js/*' filter='?yui_js' %}
             <script src="{{ asset_url }}"></script>
         {% endjavascripts %}
 
     .. code-block:: html+php
 
         <?php foreach ($view['assetic']->javascripts(
-            array('@AcmeFooBundle/Resources/public/js/*'),
+            array('@AppBundle/Resources/public/js/*'),
             array('?yui_js')
         ) as $url): ?>
             <script src="<?php echo $view->escape($url) ?>"></script>
-        <?php endforeach; ?>
+        <?php endforeach ?>
 
 .. tip::
 
@@ -162,6 +173,6 @@ apply this filter when debug mode is off.
     common config file. For details on applying filters by file extension,
     see :ref:`cookbook-assetic-apply-to`.
 
-.. _`YUI Compressor`: http://developer.yahoo.com/yui/compressor/
+.. _`YUI Compressor`: http://yui.github.io/yuicompressor/
 .. _`Download the JAR`: https://github.com/yui/yuicompressor/releases
-.. _`deprecation process`: http://www.yuiblog.com/blog/2012/10/16/state-of-yui-compressor/
+.. _`no longer maintained by Yahoo`: http://yuiblog.com/blog/2013/01/24/yui-compressor-has-a-new-owner/

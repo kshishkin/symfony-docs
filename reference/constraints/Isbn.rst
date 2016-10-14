@@ -25,25 +25,14 @@ Basic Usage
 -----------
 
 To use the ``Isbn`` validator, simply apply it to a property or method
-on an  object that will contain a ISBN number.
+on an object that will contain a ISBN number.
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/BookcaseBundle/Resources/config/validation.yml
-        Acme\BookcaseBundle\Entity\Book:
-            properties:
-                isbn:
-                    - Isbn:
-                        isbn10: true
-                        isbn13: true
-                        bothIsbnMessage: This value is neither a valid ISBN-10 nor a valid ISBN-13.
-
     .. code-block:: php-annotations
 
-        // src/Acme/BookcaseBundle/Entity/Book.php
-        namespace Acme\BookcaseBundle\Entity;
+        // src/AppBundle/Entity/Book.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Constraints as Assert;
 
@@ -59,20 +48,33 @@ on an  object that will contain a ISBN number.
             protected $isbn;
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Book:
+            properties:
+                isbn:
+                    - Isbn:
+                        isbn10: true
+                        isbn13: true
+                        bothIsbnMessage: This value is neither a valid ISBN-10 nor a valid ISBN-13.
+
     .. code-block:: xml
 
-        <!-- src/Acme/BookcaseBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\BookcaseBundle\Entity\Book">
+            <class name="AppBundle\Entity\Book">
                 <property name="isbn">
                     <constraint name="Isbn">
                         <option name="isbn10">true</option>
                         <option name="isbn13">true</option>
-                        <option name="bothIsbnMessage">This value is neither a valid ISBN-10 nor a valid ISBN-13.</option>
+                        <option name="bothIsbnMessage">
+                            This value is neither a valid ISBN-10 nor a valid ISBN-13.
+                        </option>
                     </constraint>
                 </property>
             </class>
@@ -80,8 +82,8 @@ on an  object that will contain a ISBN number.
 
     .. code-block:: php
 
-        // src/Acme/BookcaseBundle/Entity/Book.php
-        namespace Acme\BookcaseBundle\Entity;
+        // src/AppBundle/Entity/Book.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Mapping\ClassMetadata;
         use Symfony\Component\Validator\Constraints as Assert;
@@ -106,18 +108,18 @@ Available Options
 isbn10
 ~~~~~~
 
-**type**: ``boolean``
+**type**: ``boolean`` **default**: ``false``
 
-If this required option is set to ``true`` the constraint will check if the
-code is a valid ISBN-10 code.
+If this required option is set to ``true`` the constraint will check if
+the code is a valid ISBN-10 code.
 
 isbn13
 ~~~~~~
 
-**type**: ``boolean``
+**type**: ``boolean`` **default**: ``false``
 
-If this required option is set to ``true`` the constraint will check if the
-code is a valid ISBN-13 code.
+If this required option is set to ``true`` the constraint will check if
+the code is a valid ISBN-13 code.
 
 isbn10Message
 ~~~~~~~~~~~~~
@@ -143,4 +145,4 @@ bothIsbnMessage
 The message that will be shown if both the `isbn10`_ and `isbn13`_ options
 are true and the given value does not pass the ISBN-13 nor the ISBN-13 check.
 
-.. _`International Standard Book Number (ISBN)`: http://en.wikipedia.org/wiki/Isbn
+.. _`International Standard Book Number (ISBN)`: https://en.wikipedia.org/wiki/Isbn

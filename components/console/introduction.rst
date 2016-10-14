@@ -18,16 +18,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/console`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/Console).
+* Use the official Git repository (https://github.com/symfony/console).
 
-.. note::
-
-    Windows does not support ANSI colors by default so the Console component detects and
-    disables colors where Windows does not have support. However, if Windows is not
-    configured with an ANSI driver and your console commands invoke other scripts which
-    emit ANSI color sequences, they will be shown as raw escape characters.
-
-    To enable ANSI color support for Windows, please install `ANSICON`_.
+.. include:: /components/require_autoload.rst.inc
 
 Creating a basic Command
 ------------------------
@@ -88,11 +81,13 @@ an ``Application`` and adds commands to it::
     <?php
     // application.php
 
+    require __DIR__.'/vendor/autoload.php';
+
     use Acme\Console\Command\GreetCommand;
     use Symfony\Component\Console\Application;
 
     $application = new Application();
-    $application->add(new GreetCommand);
+    $application->add(new GreetCommand());
     $application->run();
 
 Test the new console command by running the following
@@ -117,10 +112,40 @@ This prints::
 
     HELLO FABIEN
 
+Command Lifecycle
+~~~~~~~~~~~~~~~~~
+
+Commands have three lifecycle methods:
+
+:method:`Symfony\\Component\\Console\\Command\\Command::initialize` *(optional)*
+    This method is executed before the ``interact()`` and the ``execute()``
+    methods. Its main purpose is to initialize variables used in the rest of
+    the command methods.
+
+:method:`Symfony\\Component\\Console\\Command\\Command::interact` *(optional)*
+    This method is executed after ``initialize()`` and before ``execute()``.
+    Its purpose is to check if some of the options/arguments are missing
+    and interactively ask the user for those values. This is the last place
+    where you can ask for missing options/arguments. After this command,
+    missing options/arguments will result in an error.
+
+:method:`Symfony\\Component\\Console\\Command\\Command::execute` *(required)*
+    This method is executed after ``interact()`` and ``initialize()``.
+    It contains the logic you want the command to execute.
+
 .. _components-console-coloring:
 
 Coloring the Output
 ~~~~~~~~~~~~~~~~~~~
+
+.. note::
+
+    By default, the Windows command console doesn't support output coloring. The
+    Console component disables output coloring for Windows systems, but if your
+    commands invoke other scripts which emit color sequences, they will be
+    wrongly displayed as raw escape characters. Install the `Cmder`_, `ConEmu`_, `ANSICON`_
+    or `Mintty`_ (used by default in GitBash and Cygwin) free applications
+    to add coloring support to your Windows command console.
 
 Whenever you output text, you can surround the text with tags to color its
 output. For example::
@@ -137,6 +162,9 @@ output. For example::
     // white text on a red background
     $output->writeln('<error>foo</error>');
 
+The closing tag can be replaced by ``</>``, which revokes all formatting options
+established by the last opened tag.
+
 It is possible to define your own styles using the class
 :class:`Symfony\\Component\\Console\\Formatter\\OutputFormatterStyle`::
 
@@ -145,23 +173,27 @@ It is possible to define your own styles using the class
     // ...
     $style = new OutputFormatterStyle('red', 'yellow', array('bold', 'blink'));
     $output->getFormatter()->setStyle('fire', $style);
-    $output->writeln('<fire>foo</fire>');
+    $output->writeln('<fire>foo</>');
 
 Available foreground and background colors are: ``black``, ``red``, ``green``,
 ``yellow``, ``blue``, ``magenta``, ``cyan`` and ``white``.
 
-And available options are: ``bold``, ``underscore``, ``blink``, ``reverse`` and ``conceal``.
+And available options are: ``bold``, ``underscore``, ``blink``, ``reverse``
+(enables the "reverse video" mode where the background and foreground colors
+are swapped) and ``conceal`` (sets the foreground color to transparent, making
+the typed text invisible - although it can be selected and copied; this option is
+commonly used when asking the user to type sensitive information).
 
 You can also set these colors and options inside the tagname::
 
     // green text
-    $output->writeln('<fg=green>foo</fg=green>');
+    $output->writeln('<fg=green>foo</>');
 
     // black text on a cyan background
-    $output->writeln('<fg=black;bg=cyan>foo</fg=black;bg=cyan>');
+    $output->writeln('<fg=black;bg=cyan>foo</>');
 
     // bold text on a yellow background
-    $output->writeln('<bg=yellow;options=bold>foo</bg=yellow;options=bold>');
+    $output->writeln('<bg=yellow;options=bold>foo</>');
 
 Verbosity Levels
 ~~~~~~~~~~~~~~~~
@@ -170,22 +202,18 @@ Verbosity Levels
    The ``VERBOSITY_VERY_VERBOSE`` and ``VERBOSITY_DEBUG`` constants were introduced
    in version 2.3
 
-The console has 5 levels of verbosity. These are defined in the
+The console has five verbosity levels. These are defined in the
 :class:`Symfony\\Component\\Console\\Output\\OutputInterface`:
 
-=======================================  ==================================
-Mode                                     Value
-=======================================  ==================================
-OutputInterface::VERBOSITY_QUIET         Do not output any messages
-OutputInterface::VERBOSITY_NORMAL        The default verbosity level
-OutputInterface::VERBOSITY_VERBOSE       Increased verbosity of messages
-OutputInterface::VERBOSITY_VERY_VERBOSE  Informative non essential messages
-OutputInterface::VERBOSITY_DEBUG         Debug messages
-=======================================  ==================================
-
-You can specify the quiet verbosity level with the ``--quiet`` or ``-q``
-option. The ``--verbose`` or ``-v`` option is used when you want an increased
-level of verbosity.
+===========================================  ==================================  =====================
+Value                                        Meaning                             Console option
+===========================================  ==================================  =====================
+``OutputInterface::VERBOSITY_QUIET``         Do not output any messages          ``-q`` or ``--quiet``
+``OutputInterface::VERBOSITY_NORMAL``        The default verbosity level         (none)
+``OutputInterface::VERBOSITY_VERBOSE``       Increased verbosity of messages     ``-v``
+``OutputInterface::VERBOSITY_VERY_VERBOSE``  Informative non essential messages  ``-vv``
+``OutputInterface::VERBOSITY_DEBUG``         Debug messages                      ``-vvv``
+===========================================  ==================================  =====================
 
 .. tip::
 
@@ -195,7 +223,7 @@ level of verbosity.
 It is possible to print a message in a command for only a specific verbosity
 level. For example::
 
-    if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
+    if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
         $output->writeln(...);
     }
 
@@ -262,15 +290,15 @@ You can access the ``names`` argument as an array::
         $text .= ' '.implode(', ', $names);
     }
 
-There are 3 argument variants you can use:
+There are three argument variants you can use:
 
-===========================  ===============================================================================================================
+===========================  ===========================================================================================================
 Mode                         Value
-===========================  ===============================================================================================================
-InputArgument::REQUIRED      The argument is required
-InputArgument::OPTIONAL      The argument is optional and therefore can be omitted
-InputArgument::IS_ARRAY      The argument can contain an indefinite number of arguments and must be used at the end of the argument list
-===========================  ===============================================================================================================
+===========================  ===========================================================================================================
+``InputArgument::REQUIRED``  The argument is required
+``InputArgument::OPTIONAL``  The argument is optional and therefore can be omitted
+``InputArgument::IS_ARRAY``  The argument can contain an indefinite number of arguments and must be used at the end of the argument list
+===========================  ===========================================================================================================
 
 You can combine ``IS_ARRAY`` with ``REQUIRED`` and ``OPTIONAL`` like this::
 
@@ -294,9 +322,11 @@ declare a one-letter shortcut that you can call with a single dash like
 
 .. tip::
 
-    It is also possible to make an option *optionally* accept a value (so that
-    ``--yell`` or ``--yell=loud`` work). Options can also be configured to
-    accept an array of values.
+    There is nothing forbidding you to create a command with an option that
+    optionally accepts a value. However, there is no way you can distinguish
+    when the option was used without a value (``command --yell``) or when it
+    wasn't used at all (``command``). In both cases, the value retrieved for
+    the option will be ``null``.
 
 For example, add a new option to the command that can be used to specify
 how many times in a row the message should be printed::
@@ -341,14 +371,14 @@ will work:
 
 There are 4 option variants you can use:
 
-===========================  =====================================================================================
-Option                       Value
-===========================  =====================================================================================
-InputOption::VALUE_IS_ARRAY  This option accepts multiple values (e.g. ``--dir=/foo --dir=/bar``)
-InputOption::VALUE_NONE      Do not accept input for this option (e.g. ``--yell``)
-InputOption::VALUE_REQUIRED  This value is required (e.g. ``--iterations=5``), the option itself is still optional
-InputOption::VALUE_OPTIONAL  This option may or may not have a value (e.g. ``--yell`` or ``--yell=loud``)
-===========================  =====================================================================================
+===============================  =====================================================================================
+Option                           Value
+===============================  =====================================================================================
+``InputOption::VALUE_IS_ARRAY``  This option accepts multiple values (e.g. ``--dir=/foo --dir=/bar``)
+``InputOption::VALUE_NONE``      Do not accept input for this option (e.g. ``--yell``)
+``InputOption::VALUE_REQUIRED``  This value is required (e.g. ``--iterations=5``), the option itself is still optional
+``InputOption::VALUE_OPTIONAL``  This option may or may not have a value (e.g. ``--yell`` or ``--yell=loud``)
+===============================  =====================================================================================
 
 You can combine ``VALUE_IS_ARRAY`` with ``VALUE_REQUIRED`` or ``VALUE_OPTIONAL`` like this:
 
@@ -357,11 +387,11 @@ You can combine ``VALUE_IS_ARRAY`` with ``VALUE_REQUIRED`` or ``VALUE_OPTIONAL``
     $this
         // ...
         ->addOption(
-            'iterations',
+            'colors',
             null,
             InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
-            'How many times should the message be printed?',
-            1
+            'Which colors do you like?',
+            array('blue', 'red')
         );
 
 Console Helpers
@@ -374,6 +404,8 @@ tools capable of helping you with different tasks:
 * :doc:`/components/console/helpers/formatterhelper`: customize the output colorization
 * :doc:`/components/console/helpers/progresshelper`: shows a progress bar
 * :doc:`/components/console/helpers/tablehelper`: displays tabular data as a table
+
+.. _component-console-testing-commands:
 
 Testing Commands
 ----------------
@@ -427,9 +459,11 @@ method::
 
             $command = $application->find('demo:greet');
             $commandTester = new CommandTester($command);
-            $commandTester->execute(
-                array('command' => $command->getName(), 'name' => 'Fabien', '--iterations' => 5)
-            );
+            $commandTester->execute(array(
+                'command'      => $command->getName(),
+                'name'         => 'Fabien',
+                '--iterations' => 5,
+            ));
 
             $this->assertRegExp('/Fabien/', $commandTester->getDisplay());
         }
@@ -439,6 +473,8 @@ method::
 
     You can also test a whole console application by using
     :class:`Symfony\\Component\\Console\\Tester\\ApplicationTester`.
+
+.. _calling-existing-command:
 
 Calling an Existing Command
 ---------------------------
@@ -462,22 +498,33 @@ Calling a command from another one is straightforward::
             '--yell'  => true,
         );
 
-        $input = new ArrayInput($arguments);
-        $returnCode = $command->run($input, $output);
+        $greetInput = new ArrayInput($arguments);
+        $returnCode = $command->run($greetInput, $output);
 
         // ...
     }
 
 First, you :method:`Symfony\\Component\\Console\\Application::find` the
-command you want to execute by passing the command name.
-
-Then, you need to create a new
-:class:`Symfony\\Component\\Console\\Input\\ArrayInput` with the arguments and
-options you want to pass to the command.
+command you want to execute by passing the command name. Then, you need to create
+a new :class:`Symfony\\Component\\Console\\Input\\ArrayInput` with the arguments
+and options you want to pass to the command.
 
 Eventually, calling the ``run()`` method actually executes the command and
 returns the returned code from the command (return value from command's
 ``execute()`` method).
+
+.. tip::
+
+    If you want to suppress the output of the executed command, pass a
+    :class:`Symfony\\Component\\Console\\Output\\NullOutput` as the second
+    argument to ``$command->execute()``.
+
+.. caution::
+
+    Note that all the commands will run in the same process and some of Symfony's
+    built-in commands may not work well this way. For instance, the ``cache:clear``
+    and ``cache:warmup`` commands change some class definitions, so running
+    something after them is likely to break.
 
 .. note::
 
@@ -495,6 +542,10 @@ Learn More!
 * :doc:`/components/console/usage`
 * :doc:`/components/console/single_command_tool`
 * :doc:`/components/console/events`
+* :doc:`/components/console/console_arguments`
 
 .. _Packagist: https://packagist.org/packages/symfony/console
+.. _Cmder: http://cmder.net/
+.. _ConEmu: https://conemu.github.io/
 .. _ANSICON: https://github.com/adoxa/ansicon/releases
+.. _Mintty: https://mintty.github.io/

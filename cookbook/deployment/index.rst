@@ -7,3 +7,5 @@ Deployment
     tools
     azure-website
     heroku
+    platformsh
+    fortrabbit

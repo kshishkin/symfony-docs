@@ -4,8 +4,8 @@ GreaterThanOrEqual
 .. versionadded:: 2.3
     The ``GreaterThanOrEqual`` constraint was introduced in Symfony 2.3.
 
-Validates that a value is greater than or equal to another value, defined in
-the options. To force that a value is greater than another value, see
+Validates that a value is greater than or equal to another value, defined
+in the options. To force that a value is greater than another value, see
 :doc:`/reference/constraints/GreaterThan`.
 
 +----------------+----------------------------------------------------------------------------------+
@@ -22,24 +22,15 @@ the options. To force that a value is greater than another value, see
 Basic Usage
 -----------
 
-If you want to ensure that the ``age`` of a ``Person`` class is greater than
-or equal to ``18``, you could do the following:
+If you want to ensure that the ``age`` of a ``Person`` class is greater
+than or equal to ``18``, you could do the following:
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/SocialBundle/Resources/config/validation.yml
-        Acme\SocialBundle\Entity\Person:
-            properties:
-                age:
-                    - GreaterThanOrEqual:
-                        value: 18
-
     .. code-block:: php-annotations
 
-        // src/Acme/SocialBundle/Entity/Person.php
-        namespace Acme\SocialBundle\Entity;
+        // src/AppBundle/Entity/Person.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Constraints as Assert;
 
@@ -53,15 +44,24 @@ or equal to ``18``, you could do the following:
             protected $age;
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Person:
+            properties:
+                age:
+                    - GreaterThanOrEqual:
+                        value: 18
+
     .. code-block:: xml
 
-        <!-- src/Acme/SocialBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\SocialBundle\Entity\Person">
+            <class name="AppBundle\Entity\Person">
                 <property name="age">
                     <constraint name="GreaterThanOrEqual">
                         <option name="value">18</option>
@@ -72,8 +72,8 @@ or equal to ``18``, you could do the following:
 
     .. code-block:: php
 
-        // src/Acme/SocialBundle/Entity/Person.php
-        namespace Acme\SocialBundle\Entity;
+        // src/AppBundle/Entity/Person.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Mapping\ClassMetadata;
         use Symfony\Component\Validator\Constraints as Assert;
@@ -98,5 +98,5 @@ message
 
 **type**: ``string`` **default**: ``This value should be greater than or equal to {{ compared_value }}.``
 
-This is the message that will be shown if the value is not greater than or equal
-to the comparison value.
+This is the message that will be shown if the value is not greater than
+or equal to the comparison value.

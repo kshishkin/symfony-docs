@@ -18,7 +18,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/dom-crawler`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/DomCrawler).
+* Use the official Git repository (https://github.com/symfony/dom-crawler).
+
+.. include:: /components/require_autoload.rst.inc
 
 Usage
 -----
@@ -26,9 +28,8 @@ Usage
 The :class:`Symfony\\Component\\DomCrawler\\Crawler` class provides methods
 to query and manipulate HTML and XML documents.
 
-An instance of the Crawler represents a set (:phpclass:`SplObjectStorage`)
-of :phpclass:`DOMElement` objects, which are basically nodes that you can
-traverse easily::
+An instance of the Crawler represents a set of :phpclass:`DOMElement` objects,
+which are basically nodes that you can traverse easily::
 
     use Symfony\Component\DomCrawler\Crawler;
 
@@ -45,7 +46,7 @@ traverse easily::
     $crawler = new Crawler($html);
 
     foreach ($crawler as $domElement) {
-        print $domElement->nodeName;
+        var_dump($domElement->nodeName);
     }
 
 Specialized :class:`Symfony\\Component\\DomCrawler\\Link` and
@@ -86,7 +87,7 @@ Anonymous function can be used to filter with more complex criteria::
     $crawler = $crawler
         ->filter('body > p')
         ->reduce(function (Crawler $node, $i) {
-            // filter even nodes
+            // filter every other node
             return ($i % 2) == 0;
         });
 
@@ -186,7 +187,7 @@ The crawler supports multiple ways of adding the content::
 .. note::
 
     When dealing with character sets other than ISO-8859-1, always add HTML
-    content using the :method:`Symfony\\Component\\DomCrawler\\Crawler::addHTMLContent`
+    content using the :method:`Symfony\\Component\\DomCrawler\\Crawler::addHtmlContent`
     method where you can specify the second parameter to be your target character
     set.
 
@@ -231,6 +232,12 @@ and :phpclass:`DOMNode` objects:
         $html = $crawler->html();
 
     The ``html`` method is new in Symfony 2.3.
+
+    .. caution::
+
+        Due to an issue in PHP, the ``html()`` method returns wrongly decoded HTML
+        entities in PHP versions lower than 5.3.6 (for example, it returns ``•``
+        instead of ``&bull;``).
 
 Links
 ~~~~~
@@ -377,5 +384,5 @@ directly::
     // submit that form
     $crawler = $client->submit($form);
 
-.. _`Goutte`:  https://github.com/fabpot/goutte
+.. _`Goutte`: https://github.com/FriendsOfPHP/Goutte
 .. _Packagist: https://packagist.org/packages/symfony/dom-crawler

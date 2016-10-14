@@ -4,7 +4,10 @@
 MonologBundle Configuration ("monolog")
 =======================================
 
-Full default Configuration
+For a full list of handler types and related configuration
+options, see `Monolog Configuration`_.
+
+Full Default Configuration
 --------------------------
 
 .. configuration-block::
@@ -32,7 +35,7 @@ Full default Configuration
 
                 # Default options and values for some "my_custom_handler"
                 # Note: many of these options are specific to the "type".
-                # For example, the "service" type doesn't use any options
+                # For example, the 'service' type doesn't use any options
                 # except id and channels
                 my_custom_handler:
                     type:                 ~ # Required
@@ -40,7 +43,7 @@ Full default Configuration
                     priority:             0
                     level:                DEBUG
                     bubble:               true
-                    path:                 "%kernel.logs_dir%/%kernel.environment%.log"
+                    path:                 '%kernel.logs_dir%/%kernel.environment%.log'
                     ident:                false
                     facility:             user
                     max_files:            0
@@ -67,8 +70,11 @@ Full default Configuration
         <container xmlns="http://symfony.com/schema/dic/services"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:monolog="http://symfony.com/schema/dic/monolog"
-            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd
-                                http://symfony.com/schema/dic/monolog http://symfony.com/schema/dic/monolog/monolog-1.0.xsd">
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/monolog
+                http://symfony.com/schema/dic/monolog/monolog-1.0.xsd"
+        >
 
             <monolog:config>
                 <monolog:handler
@@ -98,3 +104,5 @@ Full default Configuration
     When the profiler is enabled, a handler is added to store the logs'
     messages in the profiler. The profiler uses the name "debug" so it
     is reserved and cannot be used in the configuration.
+
+.. _`Monolog Configuration`: https://github.com/symfony/monolog-bundle/blob/master/DependencyInjection/Configuration.php

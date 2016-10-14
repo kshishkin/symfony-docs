@@ -15,17 +15,17 @@ is built-in automatically for all of your bundles.
 
 Take the following paths as an example:
 
-.. code-block:: jinja
+.. code-block:: twig
 
-    {% extends "AcmeDemoBundle::layout.html.twig" %}
-    {% include "AcmeDemoBundle:Foo:bar.html.twig" %}
+    {% extends "AppBundle::layout.html.twig" %}
+    {{ include('AppBundle:Foo:bar.html.twig') }}
 
 With namespaced paths, the following works as well:
 
-.. code-block:: jinja
+.. code-block:: twig
 
-    {% extends "@AcmeDemo/layout.html.twig" %}
-    {% include "@AcmeDemo/Foo/bar.html.twig" %}
+    {% extends "@App/layout.html.twig" %}
+    {{ include('@App/Foo/bar.html.twig') }}
 
 Both paths are valid and functional by default in Symfony.
 
@@ -74,13 +74,20 @@ directory:
             );
         ));
 
+.. caution::
+
+    Prior to 2.8, templates in custom namespaces are not pre-compiled by
+    Symfony's cache warmup process. They are compiled on demand. This may
+    cause problems if two simultaneous requests are trying to use the
+    template for the first time.
+
 The registered namespace is called ``foo_bar``, which refers to the
 ``vendor/acme/foo-bar/templates`` directory. Assuming there's a file
 called ``sidebar.twig`` in that directory, you can use it easily:
 
-.. code-block:: jinja
+.. code-block:: twig
 
-    {% include '@foo_bar/sidebar.twig' %}
+    {{ include('@foo_bar/sidebar.twig') }}
 
 Multiple Paths per Namespace
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,6 +139,6 @@ specific template doesn't exist.
 Now, you can use the same ``@theme`` namespace to refer to any template located
 in the previous three directories:
 
-.. code-block:: jinja
+.. code-block:: twig
 
-    {% include '@theme/header.twig' %}
+    {{ include('@theme/header.twig') }}

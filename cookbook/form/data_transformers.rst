@@ -4,46 +4,169 @@
 How to Use Data Transformers
 ============================
 
-You'll often find the need to transform the data the user entered in a form into
-something else for use in your program. You could easily do this manually in your
-controller, but what if you want to use this specific form in different places?
+Data transformers are used to translate the data for a field into a format that can
+be displayed in a form (and back on submit). They're already used internally for
+many field types. For example, the :doc:`date field type </reference/forms/types/date>`
+can be rendered as a ``yyyy-MM-dd``-formatted input textbox. Internally, a data transformer
+converts the starting ``DateTime`` value of the field into the ``yyyy-MM-dd`` string
+to render the form, and then back into a ``DateTime`` object on submit.
 
-Say you have a one-to-one relation of Task to Issue, e.g. a Task optionally has an
-issue linked to it. Adding a listbox with all possible issues can eventually lead to
-a really long listbox in which it is impossible to find something. You might
-want to add a textbox instead, where the user can simply enter the issue number.
+.. caution::
 
-You could try to do this in your controller, but it's not the best solution.
-It would be better if this issue were automatically converted to an Issue object.
-This is where Data Transformers come into play.
+    When a form field has the ``inherit_data`` option set, Data Transformers
+    won't be applied to that field.
+
+.. _simple-example-sanitizing-html-on-user-input:
+
+Simple Example: Transforming String Tags from User Input to an Array
+--------------------------------------------------------------------
+
+Suppose you have a Task form with a tags ``text`` type::
+
+    // src/AppBundle/Form/TaskType.php
+    namespace AppBundle\Form\Type;
+
+    use Symfony\Component\Form\FormBuilderInterface;
+    use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+
+    // ...
+    class TaskType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder->add('tags', 'text')
+        }
+
+        public function setDefaultOptions(OptionsResolverInterface $resolver)
+        {
+            $resolver->setDefaults(array(
+                'data_class' => 'AppBundle\Entity\Task',
+            ));
+        }
+
+        // ...
+    }
+
+Internally the ``tags`` are stored as an array, but displayed to the user as a
+simple comma seperated string to make them easier to edit.
+
+This is a *perfect* time to attach a custom data transformer to the ``tags``
+field. The easiest way to do this is with the :class:`Symfony\\Component\\Form\\CallbackTransformer`
+class::
+
+    // src/AppBundle/Form/TaskType.php
+    namespace AppBundle\Form\Type;
+
+    use Symfony\Component\Form\CallbackTransformer;
+    use Symfony\Component\Form\FormBuilderInterface;
+    // ...
+
+    class TaskType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder->add('tags', 'text');
+
+            $builder->get('tags')
+                ->addModelTransformer(new CallbackTransformer(
+                    function ($tagsAsArray) {
+                        // transform the array to a string
+                        return implode(', ', $tagsAsArray);
+                    },
+                    function ($tagsAsString) {
+                        // transform the string back to an array
+                        return explode(', ', $tagsAsString);
+                    }
+                ))
+            ;
+        }
+
+        // ...
+    }
+
+The ``CallbackTransformer`` takes two callback functions as arguments. The
+first transforms the original value into a format that'll be used to render the
+field. The second does the reverse: it transforms the submitted value back into
+the format you'll use in your code.
+
+.. tip::
+
+    The ``addModelTransformer()`` method accepts *any* object that implements
+    :class:`Symfony\\Component\\Form\\DataTransformerInterface` - so you can create
+    your own classes, instead of putting all the logic in the form (see the next section).
+
+You can also add the transformer, right when adding the field by changing the format
+slightly::
+
+    $builder->add(
+        $builder
+            ->create('tags', 'text')
+            ->addModelTransformer(...)
+    );
+
+Harder Example: Transforming an Issue Number into an Issue Entity
+-----------------------------------------------------------------
+
+Say you have a many-to-one relation from the Task entity to an Issue entity (i.e. each
+Task has an optional foreign key to its related Issue). Adding a listbox with all
+possible issues could eventually get *really* long and take a long time to load.
+Instead, you decide you want to add a textbox, where the user can simply enter the
+issue number.
+
+Start by setting up the text field like normal::
+
+    // src/AppBundle/Form/TaskType.php
+    namespace AppBundle\Form\Type;
+
+    // ...
+    class TaskType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder
+                ->add('description', 'textarea')
+                ->add('issue', 'text')
+            ;
+        }
+
+        public function setDefaultOptions(OptionsResolverInterface $resolver)
+        {
+            $resolver->setDefaults(array(
+                'data_class' => 'AppBundle\Entity\Task'
+            ));
+        }
+
+        // ...
+    }
+
+Good start! But if you stopped here and submitted the form, the Task's ``issue``
+property would be a string (e.g. "55"). How can you transform this into an ``Issue``
+entity on submit?
 
 Creating the Transformer
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-First, create an ``IssueToNumberTransformer`` class - this class will be responsible
-for converting to and from the issue number and the ``Issue`` object::
+You could use the ``CallbackTransformer`` like earlier. But since this is a bit more
+complex, creating a new transformer class will keep the ``TaskType`` form class simpler.
 
-    // src/Acme/TaskBundle/Form/DataTransformer/IssueToNumberTransformer.php
-    namespace Acme\TaskBundle\Form\DataTransformer;
+Create an ``IssueToNumberTransformer`` class: it will be responsible for converting
+to and from the issue number and the ``Issue`` object::
 
+    // src/AppBundle/Form/DataTransformer/IssueToNumberTransformer.php
+    namespace AppBundle\Form\DataTransformer;
+
+    use AppBundle\Entity\Issue;
+    use Doctrine\Common\Persistence\ObjectManager;
     use Symfony\Component\Form\DataTransformerInterface;
     use Symfony\Component\Form\Exception\TransformationFailedException;
-    use Doctrine\Common\Persistence\ObjectManager;
-    use Acme\TaskBundle\Entity\Issue;
 
     class IssueToNumberTransformer implements DataTransformerInterface
     {
-        /**
-         * @var ObjectManager
-         */
-        private $om;
+        private $manager;
 
-        /**
-         * @param ObjectManager $om
-         */
-        public function __construct(ObjectManager $om)
+        public function __construct(ObjectManager $manager)
         {
-            $this->om = $om;
+            $this->manager = $manager;
         }
 
         /**
@@ -55,36 +178,39 @@ for converting to and from the issue number and the ``Issue`` object::
         public function transform($issue)
         {
             if (null === $issue) {
-                return "";
+                return '';
             }
 
-            return $issue->getNumber();
+            return $issue->getId();
         }
 
         /**
          * Transforms a string (number) to an object (issue).
          *
-         * @param  string $number
-         *
+         * @param  string $issueNumber
          * @return Issue|null
-         *
          * @throws TransformationFailedException if object (issue) is not found.
          */
-        public function reverseTransform($number)
+        public function reverseTransform($issueNumber)
         {
-            if (!$number) {
-                return null;
+            // no issue number? It's optional, so that's ok
+            if (!$issueNumber) {
+                return;
             }
 
-            $issue = $this->om
-                ->getRepository('AcmeTaskBundle:Issue')
-                ->findOneBy(array('number' => $number))
+            $issue = $this->manager
+                ->getRepository('AppBundle:Issue')
+                // query for the issue with this id
+                ->find($issueNumber)
             ;
 
             if (null === $issue) {
+                // causes a validation error
+                // this message is not shown to the user
+                // see the invalid_message option
                 throw new TransformationFailedException(sprintf(
                     'An issue with number "%s" does not exist!',
-                    $number
+                    $issueNumber
                 ));
             }
 
@@ -92,10 +218,15 @@ for converting to and from the issue number and the ``Issue`` object::
         }
     }
 
-.. tip::
+Just like in the first example, a transformer has two directions. The ``transform()``
+method is responsible for converting the data used in your code to a format that
+can be rendered in your form (e.g. an ``Issue`` object to its ``id``, a string).
+The ``reverseTransform()`` method does the reverse: it converts the submitted value
+back into the format you want (e.g. convert the ``id`` back to the ``Issue`` object).
 
-    If you want a new issue to be created when an unknown number is entered, you
-    can instantiate it rather than throwing the ``TransformationFailedException``.
+To cause a validation error, throw a :class:`Symfony\\Component\\Form\\Exception\\TransformationFailedException`.
+But the message you pass to this exception won't be shown to the user. You'll set
+that message with the ``invalid_message`` option (see below).
 
 .. note::
 
@@ -104,83 +235,218 @@ for converting to and from the issue number and the ``Issue`` object::
     an empty string, 0 for integers or 0.0 for floats).
 
 Using the Transformer
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
-Now that you have the transformer built, you just need to add it to your
-issue field in some form.
+Next, you need to instantiate the ``IssueToNumberTransformer`` class from inside
+``TaskType`` and add it to the ``issue`` field. But to do that, you'll need an instance
+of the entity manager (because ``IssueToNumberTransformer`` needs this).
 
-You can also use transformers without creating a new custom form type
-by calling ``addModelTransformer`` (or ``addViewTransformer`` - see
-`Model and View Transformers`_) on any field builder::
+No problem! Just add a ``__construct()`` function to ``TaskType`` and force this
+to be passed in. Then, you can easily create and add the transformer::
 
-    use Symfony\Component\Form\FormBuilderInterface;
-    use Acme\TaskBundle\Form\DataTransformer\IssueToNumberTransformer;
+    // src/AppBundle/Form/TaskType.php
+    namespace AppBundle\Form\Type;
 
+    use AppBundle\Form\DataTransformer\IssueToNumberTransformer;
+    use Doctrine\Common\Persistence\ObjectManager;
+
+    // ...
     class TaskType extends AbstractType
     {
-        public function buildForm(FormBuilderInterface $builder, array $options)
+        private $manager;
+
+        public function __construct(ObjectManager $manager)
         {
-            // ...
-
-            // this assumes that the entity manager was passed in as an option
-            $entityManager = $options['em'];
-            $transformer = new IssueToNumberTransformer($entityManager);
-
-            // add a normal text field, but add your transformer to it
-            $builder->add(
-                $builder->create('issue', 'text')
-                    ->addModelTransformer($transformer)
-            );
+            $this->manager = $manager;
         }
 
-        public function setDefaultOptions(OptionsResolverInterface $resolver)
+        public function buildForm(FormBuilderInterface $builder, array $options)
         {
-            $resolver
-                ->setDefaults(array(
-                    'data_class' => 'Acme\TaskBundle\Entity\Task',
-                ))
-                ->setRequired(array(
-                    'em',
-                ))
-                ->setAllowedTypes(array(
-                    'em' => 'Doctrine\Common\Persistence\ObjectManager',
+            $builder
+                ->add('description', 'textarea')
+                ->add('issue', 'text', array(
+                    // validation message if the data transformer fails
+                    'invalid_message' => 'That is not a valid issue number',
                 ));
 
             // ...
+
+            $builder->get('issue')
+                ->addModelTransformer(new IssueToNumberTransformer($this->manager));
         }
 
         // ...
     }
 
-This example requires that you pass in the entity manager as an option
-when creating your form. Later, you'll learn how you could create a custom
-``issue`` field type to avoid needing to do this in your controller::
+Now, when you create your ``TaskType``, you'll need to pass in the entity manager::
 
-    $taskForm = $this->createForm(new TaskType(), $task, array(
-        'em' => $this->getDoctrine()->getManager(),
-    ));
+    // e.g. in a controller somewhere
+    $manager = $this->getDoctrine()->getManager();
+    $form = $this->createForm(new TaskType($manager), $task);
+
+    // ...
+
+.. note::
+
+    To make this step easier (especially if ``TaskType`` is embedded into other
+    form type classes), you might choose to :ref:`register your form type as a service <form-as-services>`.
 
 Cool, you're done! Your user will be able to enter an issue number into the
 text field and it will be transformed back into an Issue object. This means
-that, after a successful submission, the Form framework will pass a real Issue
-object to ``Task::setIssue()`` instead of the issue number.
+that, after a successful submission, the Form component will pass a real
+``Issue`` object to ``Task::setIssue()`` instead of the issue number.
 
 If the issue isn't found, a form error will be created for that field and
 its error message can be controlled with the ``invalid_message`` field option.
 
 .. caution::
 
-    Notice that adding a transformer requires using a slightly more complicated
-    syntax when adding the field. The following is **wrong**, as the transformer
-    would be applied to the entire form, instead of just this field::
+    Be careful when adding your transformers. For example, the following is **wrong**,
+    as the transformer would be applied to the entire form, instead of just this
+    field::
 
         // THIS IS WRONG - TRANSFORMER WILL BE APPLIED TO THE ENTIRE FORM
         // see above example for correct code
         $builder->add('issue', 'text')
             ->addModelTransformer($transformer);
 
-Model and View Transformers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _using-transformers-in-a-custom-field-type:
+
+Creating a Reusable issue_selector Field
+----------------------------------------
+
+In the above example, you applied the transformer to a normal ``text`` field. But
+if you do this transformation a lot, it might be better to
+:doc:`create a custom field type </cookbook/form/create_custom_field_type>`.
+that does this automatically.
+
+First, create the custom field type class::
+
+    // src/AppBundle/Form/IssueSelectorType.php
+    namespace AppBundle\Form;
+
+    use AppBundle\Form\DataTransformer\IssueToNumberTransformer;
+    use Doctrine\Common\Persistence\ObjectManager;
+    use Symfony\Component\Form\AbstractType;
+    use Symfony\Component\Form\FormBuilderInterface;
+    use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+
+    class IssueSelectorType extends AbstractType
+    {
+        private $manager;
+
+        public function __construct(ObjectManager $manager)
+        {
+            $this->manager = $manager;
+        }
+
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $transformer = new IssueToNumberTransformer($this->manager);
+            $builder->addModelTransformer($transformer);
+        }
+
+        public function setDefaultOptions(OptionsResolverInterface $resolver)
+        {
+            $resolver->setDefaults(array(
+                'invalid_message' => 'The selected issue does not exist',
+            ));
+        }
+
+        public function getParent()
+        {
+            return 'text';
+        }
+
+        public function getName()
+        {
+            return 'issue_selector';
+        }
+    }
+
+Great! This will act and render like a text field (``getParent()``), but will automatically
+have the data transformer *and* a nice default value for the ``invalid_message`` option.
+
+Next, register your type as a service and tag it with ``form.type`` so that
+it's recognized as a custom field type:
+
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        # app/config/services.yml
+        services:
+            app.type.issue_selector:
+                class: AppBundle\Form\IssueSelectorType
+                arguments: ['@doctrine.orm.entity_manager']
+                tags:
+                    - { name: form.type, alias: issue_selector }
+
+
+    .. code-block:: xml
+
+        <!-- app/config/services.xml -->
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+            <services>
+                <service id="app.type.issue_selector"
+                    class="AppBundle\Form\IssueSelectorType">
+                    <argument type="service" id="doctrine.orm.entity_manager"/>
+                    <tag name="form.type" alias="issue_selector" />
+                </service>
+            </services>
+        </container>
+
+    .. code-block:: php
+
+        // app/config/services.php
+        use Symfony\Component\DependencyInjection\Definition;
+        use Symfony\Component\DependencyInjection\Reference;
+        // ...
+
+        $container
+            ->setDefinition('app.type.issue_selector', new Definition(
+                    'AppBundle\Form\IssueSelectorType'
+                ),
+                array(
+                    new Reference('doctrine.orm.entity_manager'),
+                )
+            )
+            ->addTag('form.type', array(
+                'alias' => 'issue_selector',
+            ))
+        ;
+
+Now, whenever you need to use your special ``issue_selector`` field type,
+it's quite easy::
+
+    // src/AppBundle/Form/TaskType.php
+    namespace AppBundle\Form\Type;
+
+    use AppBundle\Form\DataTransformer\IssueToNumberTransformer;
+    // ...
+
+    class TaskType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder
+                ->add('description', 'textarea')
+                ->add('issue', 'issue_selector')
+            ;
+        }
+
+        // ...
+    }
+
+.. _model-and-view-transformers:
+
+About Model and View Transformers
+---------------------------------
 
 In the above example, the transformer was used as a "model" transformer.
 In fact, there are two different types of transformers and three different
@@ -191,15 +457,15 @@ types of underlying data.
 
 In any form, the three different types of data are:
 
-1) **Model data** - This is the data in the format used in your application
-   (e.g. an ``Issue`` object). If you call ``Form::getData`` or ``Form::setData``,
+#. **Model data** - This is the data in the format used in your application
+   (e.g. an ``Issue`` object). If you call ``Form::getData()`` or ``Form::setData()``,
    you're dealing with the "model" data.
 
-2) **Norm Data** - This is a normalized version of your data, and is commonly
+#. **Norm Data** - This is a normalized version of your data and is commonly
    the same as your "model" data (though not in our example). It's not commonly
    used directly.
 
-3) **View Data** - This is the format that's used to fill in the form fields
+#. **View Data** - This is the format that's used to fill in the form fields
    themselves. It's also the format in which the user will submit the data. When
    you call ``Form::submit($data)``, the ``$data`` is in the "view" data format.
 
@@ -232,122 +498,6 @@ about what the "norm" data for a field should really be. For example, the
 "norm" data for a ``text`` field is a string, but is a ``DateTime`` object
 for a ``date`` field.
 
-Using Transformers in a custom Field Type
------------------------------------------
+.. tip::
 
-In the above example, you applied the transformer to a normal ``text`` field.
-This was easy, but has two downsides:
-
-1) You need to always remember to apply the transformer whenever you're adding
-a field for issue numbers.
-
-2) You need to worry about passing in the ``em`` option whenever you're creating
-a form that uses the transformer.
-
-Because of these, you may choose to :doc:`create a custom field type </cookbook/form/create_custom_field_type>`.
-First, create the custom field type class::
-
-    // src/Acme/TaskBundle/Form/Type/IssueSelectorType.php
-    namespace Acme\TaskBundle\Form\Type;
-
-    use Symfony\Component\Form\AbstractType;
-    use Symfony\Component\Form\FormBuilderInterface;
-    use Acme\TaskBundle\Form\DataTransformer\IssueToNumberTransformer;
-    use Doctrine\Common\Persistence\ObjectManager;
-    use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-
-    class IssueSelectorType extends AbstractType
-    {
-        /**
-         * @var ObjectManager
-         */
-        private $om;
-
-        /**
-         * @param ObjectManager $om
-         */
-        public function __construct(ObjectManager $om)
-        {
-            $this->om = $om;
-        }
-
-        public function buildForm(FormBuilderInterface $builder, array $options)
-        {
-            $transformer = new IssueToNumberTransformer($this->om);
-            $builder->addModelTransformer($transformer);
-        }
-
-        public function setDefaultOptions(OptionsResolverInterface $resolver)
-        {
-            $resolver->setDefaults(array(
-                'invalid_message' => 'The selected issue does not exist',
-            ));
-        }
-
-        public function getParent()
-        {
-            return 'text';
-        }
-
-        public function getName()
-        {
-            return 'issue_selector';
-        }
-    }
-
-Next, register your type as a service and tag it with ``form.type`` so that
-it's recognized as a custom field type:
-
-.. configuration-block::
-
-    .. code-block:: yaml
-
-        services:
-            acme_demo.type.issue_selector:
-                class: Acme\TaskBundle\Form\Type\IssueSelectorType
-                arguments: ["@doctrine.orm.entity_manager"]
-                tags:
-                    - { name: form.type, alias: issue_selector }
-
-    .. code-block:: xml
-
-        <service id="acme_demo.type.issue_selector" class="Acme\TaskBundle\Form\Type\IssueSelectorType">
-            <argument type="service" id="doctrine.orm.entity_manager"/>
-            <tag name="form.type" alias="issue_selector" />
-        </service>
-
-    .. code-block:: php
-
-        $container
-            ->setDefinition('acme_demo.type.issue_selector', array(
-                new Reference('doctrine.orm.entity_manager'),
-            ))
-            ->addTag('form.type', array(
-                'alias' => 'issue_selector',
-            ))
-        ;
-
-Now, whenever you need to use your special ``issue_selector`` field type,
-it's quite easy::
-
-    // src/Acme/TaskBundle/Form/Type/TaskType.php
-    namespace Acme\TaskBundle\Form\Type;
-
-    use Symfony\Component\Form\AbstractType;
-    use Symfony\Component\Form\FormBuilderInterface;
-
-    class TaskType extends AbstractType
-    {
-        public function buildForm(FormBuilderInterface $builder, array $options)
-        {
-            $builder
-                ->add('task')
-                ->add('dueDate', null, array('widget' => 'single_text'))
-                ->add('issue', 'issue_selector');
-        }
-
-        public function getName()
-        {
-            return 'task';
-        }
-    }
+    As a general rule, the normalized data should contain as much information as possible.

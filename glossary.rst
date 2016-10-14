@@ -110,7 +110,7 @@ Glossary
         The *Kernel* is the core of Symfony. The Kernel object handles HTTP
         requests using all the bundles and libraries registered to it. See
         :ref:`The Architecture: The Application Directory <the-app-dir>` and the
-        :doc:`/book/internals` chapter.
+        :doc:`Internal Events Reference </reference/events>`.
 
    Firewall
         In Symfony, a *Firewall* doesn't have to do with networking. Instead,
@@ -121,11 +121,16 @@ Glossary
 
    YAML
         *YAML* is a recursive acronym for "YAML Ain't a Markup Language". It's a
-        lightweight, humane data serialization language used extensively in
+        lightweight, human friendly data serialization language used extensively in
         Symfony's configuration files. See the :doc:`/components/yaml/introduction`
         chapter.
 
+   Annotation
+         Annotations are metadata written alongside your code. They can either be explanatory and will be
+         ignored during execution or add functionality to the line of code directly below as a means of
+         configuration. For example, the annotation ``@var`` describes the type of a variable, whereas in
+         Symfony2 ``@Assert`` can add validation to a member variable of a class (see :doc:`/book/validation` chapter).
 
-.. _`service-oriented architecture`: http://wikipedia.org/wiki/Service-oriented_architecture
-.. _`HTTP Wikipedia`: http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol
+.. _`service-oriented architecture`: https://wikipedia.org/wiki/Service-oriented_architecture
+.. _`HTTP Wikipedia`: https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 .. _`HTTP 1.1 RFC`: http://www.w3.org/Protocols/rfc2616/rfc2616.html

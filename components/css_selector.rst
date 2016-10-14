@@ -13,7 +13,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/css-selector`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/CssSelector).
+* Use the official Git repository (https://github.com/symfony/css-selector).
+
+.. include:: /components/require_autoload.rst.inc
 
 Usage
 -----
@@ -49,7 +51,7 @@ equivalents::
 
     use Symfony\Component\CssSelector\CssSelector;
 
-    print CssSelector::toXPath('div.item > h4 > a');
+    var_dump(CssSelector::toXPath('div.item > h4 > a'));
 
 This gives the following output:
 
@@ -76,7 +78,7 @@ web-browser.
 
 * link-state selectors: ``:link``, ``:visited``, ``:target``
 * selectors based on user action: ``:hover``, ``:focus``, ``:active``
-* UI-state selectors: ``:invalid``, ``:indeterminate`` (however, ``:enabled``, 
+* UI-state selectors: ``:invalid``, ``:indeterminate`` (however, ``:enabled``,
   ``:disabled``, ``:checked`` and ``:unchecked`` are available)
 
 Pseudo-elements (``:before``, ``:after``, ``:first-line``,

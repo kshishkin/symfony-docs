@@ -14,7 +14,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/routing`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/Routing).
+* Use the official Git repository (https://github.com/symfony/routing).
+
+.. include:: /components/require_autoload.rst.inc
 
 Usage
 -----
@@ -37,7 +39,7 @@ your autoloader to load the Routing component::
     $routes = new RouteCollection();
     $routes->add('route_name', $route);
 
-    $context = new RequestContext($_SERVER['REQUEST_URI']);
+    $context = new RequestContext('/');
 
     $matcher = new UrlMatcher($routes, $context);
 
@@ -46,10 +48,9 @@ your autoloader to load the Routing component::
 
 .. note::
 
-    Be careful when using ``$_SERVER['REQUEST_URI']``, as it may include
-    any query parameters on the URL, which will cause problems with route
-    matching. An easy way to solve this is to use the HttpFoundation component
-    as explained :ref:`below <components-routing-http-foundation>`.
+    The :class:`Symfony\\Component\\Routing\\RequestContext` parameters can be populated
+    with the values stored in ``$_SERVER``, but it's easier to use the HttpFoundation
+    component as explained :ref:`below <components-routing-http-foundation>`.
 
 You can add as many routes as you like to a
 :class:`Symfony\\Component\\Routing\\RouteCollection`.
@@ -61,36 +62,40 @@ URL path and some array of custom variables in its constructor. This array
 of custom variables can be *anything* that's significant to your application,
 and is returned when that route is matched.
 
-If no matching route can be found a
-:class:`Symfony\\Component\\Routing\\Exception\\ResourceNotFoundException` will be thrown.
+The :method:`UrlMatcher::match() <Symfony\\Component\\Routing\\UrlMatcher::match>`
+returns the variables you set on the route as well as the wildcard placeholders
+(see below). Your application can now use this information to continue
+processing the request. In addition to the configured variables, a ``_route``
+key is added, which holds the name of the matched route.
 
-In addition to your array of custom variables, a ``_route`` key is added,
-which holds the name of the matched route.
+If no matching route can be found, a
+:class:`Symfony\\Component\\Routing\\Exception\\ResourceNotFoundException` will
+be thrown.
 
 Defining Routes
 ~~~~~~~~~~~~~~~
 
 A full route definition can contain up to seven parts:
 
-1. The URL path route. This is matched against the URL passed to the `RequestContext`,
+#. The URL path route. This is matched against the URL passed to the `RequestContext`,
    and can contain named wildcard placeholders (e.g. ``{placeholders}``)
    to match dynamic parts in the URL.
 
-2. An array of default values. This contains an array of arbitrary values
+#. An array of default values. This contains an array of arbitrary values
    that will be returned when the request matches the route.
 
-3. An array of requirements. These define constraints for the values of the
+#. An array of requirements. These define constraints for the values of the
    placeholders as regular expressions.
 
-4. An array of options. These contain internal settings for the route and
+#. An array of options. These contain internal settings for the route and
    are the least commonly needed.
 
-5. A host. This is matched against the host of the request. See
+#. A host. This is matched against the host of the request. See
    :doc:`/components/routing/hostname_pattern` for more details.
 
-6. An array of schemes. These enforce a certain HTTP scheme (``http``, ``https``).
+#. An array of schemes. These enforce a certain HTTP scheme (``http``, ``https``).
 
-7. An array of methods. These enforce a certain HTTP request method (``HEAD``,
+#. An array of methods. These enforce a certain HTTP request method (``HEAD``,
    ``GET``, ``POST``, ...).
 
 .. versionadded:: 2.2
@@ -124,6 +129,10 @@ Take the following route, which combines several of these ideas::
 In this case, the route is matched by ``/archive/2012-01``, because the ``{month}``
 wildcard matches the regular expression wildcard given. However, ``/archive/foo``
 does *not* match, because "foo" fails the month wildcard.
+
+When using wildcards, these are returned in the array result when calling
+``match``. The part of the path that the wildcard matched (e.g. ``2012-01``) is used
+as value.
 
 .. tip::
 
@@ -205,7 +214,7 @@ a certain route::
     $routes = new RouteCollection();
     $routes->add('show_post', new Route('/show/{slug}'));
 
-    $context = new RequestContext($_SERVER['REQUEST_URI']);
+    $context = new RequestContext('/');
 
     $generator = new UrlGenerator($routes, $context);
 
@@ -288,7 +297,7 @@ calls a closure and uses the result as a :class:`Symfony\\Component\\Routing\\Ro
 
     use Symfony\Component\Routing\Loader\ClosureLoader;
 
-    $closure = function() {
+    $closure = function () {
         return new RouteCollection();
     };
 
@@ -307,7 +316,7 @@ out here.
 The all-in-one Router
 ~~~~~~~~~~~~~~~~~~~~~
 
-The :class:`Symfony\\Component\\Routing\\Router` class is a all-in-one package
+The :class:`Symfony\\Component\\Routing\\Router` class is an all-in-one package
 to quickly use the Routing component. The constructor expects a loader instance,
 a path to the main route definition and some other settings::
 
@@ -325,7 +334,7 @@ automatically in the background if you want to use it. A basic example of the
 :class:`Symfony\\Component\\Routing\\Router` class would look like::
 
     $locator = new FileLocator(array(__DIR__));
-    $requestContext = new RequestContext($_SERVER['REQUEST_URI']);
+    $requestContext = new RequestContext('/');
 
     $router = new Router(
         new YamlFileLoader($locator),

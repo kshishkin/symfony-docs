@@ -40,13 +40,13 @@ itself depends on multiple voters, and makes a final verdict based on all
 the votes (either positive, negative or neutral) it has received. It
 recognizes several strategies:
 
-* ``affirmative`` (default)
-    grant access as soon as any voter returns an affirmative response;
+``affirmative`` (default)
+    grant access as soon as there is one voter granting access;
 
-* ``consensus``
+``consensus``
     grant access if there are more voters granting access than there are denying;
 
-* ``unanimous``
+``unanimous``
     only grant access if none of the voters has denied access;
 
 .. code-block:: php
@@ -85,14 +85,14 @@ of :class:`Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterf
 which means they have to implement a few methods which allows the decision
 manager to use them:
 
-* ``supportsAttribute($attribute)``
+``supportsAttribute($attribute)``
     will be used to check if the voter knows how to handle the given attribute;
 
-* ``supportsClass($class)``
+``supportsClass($class)``
     will be used to check if the voter is able to grant or deny access for
     an object of the given class;
 
-* ``vote(TokenInterface $token, $object, array $attributes)``
+``vote(TokenInterface $token, $object, array $attributes)``
     this method will do the actual voting and return a value equal to one
     of the class constants of :class:`Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterface`,
     i.e. ``VoterInterface::ACCESS_GRANTED``, ``VoterInterface::ACCESS_DENIED``
@@ -127,7 +127,7 @@ on a "remember-me" cookie, or even authenticated anonymously?
     // any object
     $object = ...;
 
-    $vote = $authenticatedVoter->vote($token, $object, array('IS_AUTHENTICATED_FULLY');
+    $vote = $authenticatedVoter->vote($token, $object, array('IS_AUTHENTICATED_FULLY'));
 
 RoleVoter
 ~~~~~~~~~
@@ -177,7 +177,7 @@ Roles
 
 Roles are objects that give expression to a certain right the user has.
 The only requirement is that they implement :class:`Symfony\\Component\\Security\\Core\\Role\\RoleInterface`,
-which means they should also have a :method:`Symfony\\Component\\Security\\Core\\Role\\Role\\RoleInterface::getRole`
+which means they should also have a :method:`Symfony\\Component\\Security\\Core\\Role\\RoleInterface::getRole`
 method that returns a string representation of the role itself. The default
 :class:`Symfony\\Component\\Security\\Core\\Role\\Role` simply returns its
 first constructor argument::
@@ -186,8 +186,8 @@ first constructor argument::
 
     $role = new Role('ROLE_ADMIN');
 
-    // will echo 'ROLE_ADMIN'
-    echo $role->getRole();
+    // will show 'ROLE_ADMIN'
+    var_dump($role->getRole());
 
 .. note::
 
@@ -247,3 +247,4 @@ decision manager::
     if (!$securityContext->isGranted('ROLE_ADMIN')) {
         throw new AccessDeniedException();
     }
+

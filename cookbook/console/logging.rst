@@ -14,20 +14,21 @@ output and process it. This can be especially handful if you already have
 some existing setup for aggregating and analyzing Symfony logs.
 
 There are basically two logging cases you would need:
- * Manually logging some information from your command;
- * Logging uncaught Exceptions.
+
+* Manually logging some information from your command;
+* Logging uncaught exceptions.
 
 Manually Logging from a Console Command
 ---------------------------------------
 
-This one is really simple. When you create a console command within the full
+This one is really simple. When you create a console command within the full-stack
 framework as described in ":doc:`/cookbook/console/console_command`", your command
 extends :class:`Symfony\\Bundle\\FrameworkBundle\\Command\\ContainerAwareCommand`.
 This means that you can simply access the standard logger service through the
 container and use it to do the logging::
 
-    // src/Acme/DemoBundle/Command/GreetCommand.php
-    namespace Acme\DemoBundle\Command;
+    // src/AppBundle/Command/GreetCommand.php
+    namespace AppBundle\Command;
 
     use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
     use Symfony\Component\Console\Input\InputArgument;
@@ -83,10 +84,9 @@ First configure a listener for console exception events in the service container
 
         # app/config/services.yml
         services:
-            kernel.listener.command_dispatch:
-                class: Acme\DemoBundle\EventListener\ConsoleExceptionListener
-                arguments:
-                    logger: "@logger"
+            app.listener.command_exception:
+                class: AppBundle\EventListener\ConsoleExceptionListener
+                arguments: ['@logger']
                 tags:
                     - { name: kernel.event_listener, event: console.exception }
 
@@ -98,12 +98,8 @@ First configure a listener for console exception events in the service container
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-            <parameters>
-                <parameter key="console_exception_listener.class">Acme\DemoBundle\EventListener\ConsoleExceptionListener</parameter>
-            </parameters>
-
             <services>
-                <service id="kernel.listener.command_dispatch" class="%console_exception_listener.class%">
+                <service id="app.listener.command_exception" class="AppBundle\EventListener\ConsoleExceptionListener">
                     <argument type="service" id="logger"/>
                     <tag name="kernel.event_listener" event="console.exception" />
                 </service>
@@ -116,12 +112,8 @@ First configure a listener for console exception events in the service container
         use Symfony\Component\DependencyInjection\Definition;
         use Symfony\Component\DependencyInjection\Reference;
 
-        $container->setParameter(
-            'console_exception_listener.class',
-            'Acme\DemoBundle\EventListener\ConsoleExceptionListener'
-        );
         $definitionConsoleExceptionListener = new Definition(
-            '%console_exception_listener.class%',
+            'AppBundle\EventListener\ConsoleExceptionListener',
             array(new Reference('logger'))
         );
         $definitionConsoleExceptionListener->addTag(
@@ -129,14 +121,14 @@ First configure a listener for console exception events in the service container
             array('event' => 'console.exception')
         );
         $container->setDefinition(
-            'kernel.listener.command_dispatch',
+            'app.listener.command_exception',
             $definitionConsoleExceptionListener
         );
 
 Then implement the actual listener::
 
-    // src/Acme/DemoBundle/EventListener/ConsoleExceptionListener.php
-    namespace Acme\DemoBundle\EventListener;
+    // src/AppBundle/EventListener/ConsoleExceptionListener.php
+    namespace AppBundle\EventListener;
 
     use Symfony\Component\Console\Event\ConsoleExceptionEvent;
     use Psr\Log\LoggerInterface;
@@ -164,7 +156,7 @@ Then implement the actual listener::
                 $command->getName()
             );
 
-            $this->logger->error($message);
+            $this->logger->error($message, array('exception' => $exception));
         }
     }
 
@@ -189,10 +181,9 @@ First configure a listener for console terminate events in the service container
 
         # app/config/services.yml
         services:
-            kernel.listener.command_dispatch:
-                class: Acme\DemoBundle\EventListener\ConsoleTerminateListener
-                arguments:
-                    logger: "@logger"
+            app.listener.command_error:
+                class: AppBundle\EventListener\ErrorLoggerListener
+                arguments: ['@logger']
                 tags:
                     - { name: kernel.event_listener, event: console.terminate }
 
@@ -204,12 +195,8 @@ First configure a listener for console terminate events in the service container
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-            <parameters>
-                <parameter key="console_exception_listener.class">Acme\DemoBundle\EventListener\ConsoleExceptionListener</parameter>
-            </parameters>
-
             <services>
-                <service id="kernel.listener.command_dispatch" class="%console_exception_listener.class%">
+                <service id="app.listener.command_error" class="AppBundle\EventListener\ErrorLoggerListener">
                     <argument type="service" id="logger"/>
                     <tag name="kernel.event_listener" event="console.terminate" />
                 </service>
@@ -222,32 +209,28 @@ First configure a listener for console terminate events in the service container
         use Symfony\Component\DependencyInjection\Definition;
         use Symfony\Component\DependencyInjection\Reference;
 
-        $container->setParameter(
-            'console_exception_listener.class',
-            'Acme\DemoBundle\EventListener\ConsoleExceptionListener'
-        );
-        $definitionConsoleExceptionListener = new Definition(
-            '%console_exception_listener.class%',
+        $definitionErrorLoggerListener = new Definition(
+            'AppBundle\EventListener\ErrorLoggerListener',
             array(new Reference('logger'))
         );
-        $definitionConsoleExceptionListener->addTag(
+        $definitionErrorLoggerListener->addTag(
             'kernel.event_listener',
             array('event' => 'console.terminate')
         );
         $container->setDefinition(
-            'kernel.listener.command_dispatch',
-            $definitionConsoleExceptionListener
+            'app.listener.command_error',
+            $definitionErrorLoggerListener
         );
 
 Then implement the actual listener::
 
-    // src/Acme/DemoBundle/EventListener/ConsoleExceptionListener.php
-    namespace Acme\DemoBundle\EventListener;
+    // src/AppBundle/EventListener/ErrorLoggerListener.php
+    namespace AppBundle\EventListener;
 
     use Symfony\Component\Console\Event\ConsoleTerminateEvent;
     use Psr\Log\LoggerInterface;
 
-    class ConsoleExceptionListener
+    class ErrorLoggerListener
     {
         private $logger;
 

@@ -5,8 +5,8 @@ How to Use the Console
 ======================
 
 The :doc:`/components/console/usage` page of the components documentation looks
-at the global console options. When you use the console as part of the full
-stack framework, some additional global options are available as well.
+at the global console options. When you use the console as part of the full-stack
+framework, some additional global options are available as well.
 
 By default, console commands run in the ``dev`` environment and you may want
 to change this for some commands. For example, you may want to run some commands
@@ -56,7 +56,7 @@ When using the shell you can choose to run each command in a separate process:
     $ php app/console -s --process-isolation
 
 When you do this, the output will not be colorized and interactivity is not
-supported so you will need to pass all command params explicitly.
+supported so you will need to pass all command parameters explicitly.
 
 .. note::
 

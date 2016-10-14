@@ -27,20 +27,20 @@ The following configuration code shows how you can configure two entity managers
                 default_connection: default
                 connections:
                     default:
-                        driver:   "%database_driver%"
-                        host:     "%database_host%"
-                        port:     "%database_port%"
-                        dbname:   "%database_name%"
-                        user:     "%database_user%"
-                        password: "%database_password%"
+                        driver:   '%database_driver%'
+                        host:     '%database_host%'
+                        port:     '%database_port%'
+                        dbname:   '%database_name%'
+                        user:     '%database_user%'
+                        password: '%database_password%'
                         charset:  UTF8
                     customer:
-                        driver:   "%database_driver2%"
-                        host:     "%database_host2%"
-                        port:     "%database_port2%"
-                        dbname:   "%database_name2%"
-                        user:     "%database_user2%"
-                        password: "%database_password2%"
+                        driver:   '%database_driver2%'
+                        host:     '%database_host2%'
+                        port:     '%database_port2%'
+                        dbname:   '%database_name2%'
+                        user:     '%database_user2%'
+                        password: '%database_password2%'
                         charset:  UTF8
 
             orm:
@@ -49,7 +49,7 @@ The following configuration code shows how you can configure two entity managers
                     default:
                         connection: default
                         mappings:
-                            AcmeDemoBundle:  ~
+                            AppBundle:  ~
                             AcmeStoreBundle: ~
                     customer:
                         connection: customer
@@ -90,7 +90,7 @@ The following configuration code shows how you can configure two entity managers
 
                 <orm default-entity-manager="default">
                     <entity-manager name="default" connection="default">
-                        <mapping name="AcmeDemoBundle" />
+                        <mapping name="AppBundle" />
                         <mapping name="AcmeStoreBundle" />
                     </entity-manager>
 
@@ -134,7 +134,7 @@ The following configuration code shows how you can configure two entity managers
                     'default' => array(
                         'connection' => 'default',
                         'mappings'   => array(
-                            'AcmeDemoBundle'  => null,
+                            'AppBundle'  => null,
                             'AcmeStoreBundle' => null,
                         ),
                     ),
@@ -150,9 +150,9 @@ The following configuration code shows how you can configure two entity managers
 
 In this case, you've defined two entity managers and called them ``default``
 and ``customer``. The ``default`` entity manager manages entities in the
-``AcmeDemoBundle`` and ``AcmeStoreBundle``, while the ``customer`` entity
-manager manages entities in the ``AcmeCustomerBundle``. You've also defined
-two connections, one for each entity manager.
+AppBundle and AcmeStoreBundle, while the ``customer`` entity manager manages
+entities in the AcmeCustomerBundle. You've also defined two connections, one
+for each entity manager.
 
 .. note::
 

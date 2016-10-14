@@ -19,23 +19,15 @@ Validates that a value is a valid `3-letter ISO 4217`_ currency name.
 Basic Usage
 -----------
 
-If you want to ensure that the ``currency`` property of an ``Order`` is a valid
-currency, you could do the following:
+If you want to ensure that the ``currency`` property of an ``Order`` is
+a valid currency, you could do the following:
 
 .. configuration-block::
 
-    .. code-block:: yaml
-
-        # src/Acme/EcommerceBundle/Resources/config/validation.yml
-        Acme\EcommerceBundle\Entity\Order:
-            properties:
-                currency:
-                    - Currency: ~
-
     .. code-block:: php-annotations
 
-        // src/Acme/EcommerceBundle/Entity/Order.php
-        namespace Acme\EcommerceBundle\Entity;
+        // src/AppBundle/Entity/Order.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Constraints as Assert;
 
@@ -47,15 +39,23 @@ currency, you could do the following:
             protected $currency;
         }
 
+    .. code-block:: yaml
+
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Order:
+            properties:
+                currency:
+                    - Currency: ~
+
     .. code-block:: xml
 
-        <!-- src/Acme/EcommerceBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\EcommerceBundle\Entity\Order">
+            <class name="AppBundle\Entity\Order">
                 <property name="currency">
                     <constraint name="Currency" />
                 </property>
@@ -64,8 +64,8 @@ currency, you could do the following:
 
     .. code-block:: php
 
-        // src/Acme/EcommerceBundle/Entity/Order.php
-        namespace Acme\SocialBundle\Entity;
+        // src/AppBundle/Entity/Order.php
+        namespace AppBundle\Entity;
 
         use Symfony\Component\Validator\Mapping\ClassMetadata;
         use Symfony\Component\Validator\Constraints as Assert;
@@ -88,4 +88,4 @@ message
 
 This is the message that will be shown if the value is not a valid currency.
 
-.. _`3-letter ISO 4217`: http://en.wikipedia.org/wiki/ISO_4217
+.. _`3-letter ISO 4217`: https://en.wikipedia.org/wiki/ISO_4217

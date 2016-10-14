@@ -18,6 +18,8 @@ message. A translation file would look like this:
     (goodbye)(au revoir)
     (hello)(bonjour)
 
+.. _components-translation-custom-loader:
+
 Creating a Custom Loader
 ------------------------
 
@@ -61,9 +63,11 @@ Once created, it can be used as any other loader::
 
     $translator->addResource('my_format', __DIR__.'/translations/messages.txt', 'fr_FR');
 
-    echo $translator->trans('welcome');
+    var_dump($translator->trans('welcome'));
 
 It will print *"accueil"*.
+
+.. _components-translation-custom-dumper:
 
 Creating a Custom Dumper
 ------------------------
@@ -112,3 +116,4 @@ YAML file are dumped into a text file with the custom format::
 
     $dumper = new MyFormatDumper();
     $dumper->dump($catalogue, array('path' => __DIR__.'/dumps'));
+

@@ -19,7 +19,9 @@ Installation
 You can install the component in 2 different ways:
 
 * :doc:`Install it via Composer </components/using_components>` (``symfony/templating`` on `Packagist`_);
-* Use the official Git repository (https://github.com/symfony/Templating).
+* Use the official Git repository (https://github.com/symfony/templating).
+
+.. include:: /components/require_autoload.rst.inc
 
 Usage
 -----
@@ -84,7 +86,7 @@ Global Variables
 
 Sometimes, you need to set a variable which is available in all templates
 rendered by an engine (like the ``$app`` variable when using the Symfony
-framework). These variables can be set by using the
+Framework). These variables can be set by using the
 :method:`Symfony\\Component\\Templating\\PhpEngine::addGlobal` method and they
 can be accessed in the template as normal variables::
 
@@ -135,7 +137,8 @@ escaper using the
 Helpers
 -------
 
-The Templating component can be easily extended via helpers. The component has
+The Templating component can be easily extended via helpers. Helpers are PHP objects that
+provide features useful in a template context. The component has
 2 built-in helpers:
 
 * :doc:`/components/templating/helpers/assetshelper`
@@ -195,7 +198,7 @@ method is used.
 
     $templating = new DelegatingEngine(array(
         new PhpEngine(...),
-        new CustomEngine(...)
+        new CustomEngine(...),
     ));
 
 .. _Packagist: https://packagist.org/packages/symfony/templating

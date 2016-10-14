@@ -37,33 +37,45 @@ Active Core Members
 
 * **Project Leader**:
 
-  * **Fabien Potencier** (:leader:`fabpot`).
+  * **Fabien Potencier** (`fabpot`_).
 
 * **Mergers** (``@symfony/mergers`` on GitHub):
 
-  * **Bernhard Schussek** (:merger:`webmozart`) can merge into the Form_,
+  * **Bernhard Schussek** (`webmozart`_) can merge into the Form_,
     Validator_, Icu_, Intl_, Locale_, OptionsResolver_ and PropertyAccess_
     components;
 
-  * **Tobias Schultze** (:merger:`Tobion`) can merge into the Routing_
-    component;
+  * **Tobias Schultze** (`Tobion`_) can merge into the Routing_,
+    OptionsResolver_ and PropertyAccess_ components;
 
-  * **Romain Neutron** (:merger:`romainneutron`) can merge into the
+  * **Romain Neutron** (`romainneutron`_) can merge into the
     Process_ component;
 
-  * **Nicolas Grekas** (:merger:`nicolas-grekas`) can merge into the Debug_
+  * **Nicolas Grekas** (`nicolas-grekas`_) can merge into the Cache_, Debug_,
+    Process_, PropertyAccess_, VarDumper_ components, PhpUnitBridge_ and
+    the DebugBundle_;
+
+  * **Christophe Coevoet** (`stof`_) can merge into all components, bridges and
+    bundles;
+
+  * **Kévin Dunglas** (`dunglas`_) can merge into the PropertyInfo_,
+    Serializer_ component;
+
+  * **Abdellatif AitBoudad** (`aitboudad`_) can merge into the Translation_
     component;
 
-  * **Christophe Coevoet** (:merger:`stof`) can merge into the BrowserKit_,
-    Config_, Console_, DependencyInjection_, DomCrawler_, EventDispatcher_,
-    HttpFoundation_, HttpKernel_, Serializer_, Stopwatch_, DoctrineBridge_,
-    MonologBridge_, and TwigBridge_ components.
+  * **Jakub Zalas** (`jakzal`_) can merge into the DomCrawler_ component;
+
+  * **Christian Flothmann** (`xabbuh`_) can merge into the Yaml_ component;
+
+  * **Javier Eguiluz** (`javiereguiluz`_) can merge into the WebProfilerBundle_
+    bundle.
 
 * **Deciders** (``@symfony/deciders`` on GitHub):
 
-  * **Jakub Zalas** (:decider:`jakzal`);
-  * **Jordi Boggiano** (:decider:`seldaek`);
-  * **Lukas Kahwe Smith** (:decider:`lsmith77`).
+  * **Jordi Boggiano** (`seldaek`_);
+  * **Lukas Kahwe Smith** (`lsmith77`_);
+  * **Ryan Weaver** (`weaverryan`_).
 
 Core Membership Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,11 +120,10 @@ Pull Request Merging Policy
 
 A pull request **can be merged** if:
 
-* Enough time was given for peer reviews (a few minutes for typos or minor
-  changes, at least 2 days for "regular" pull requests, and 4 days for pull
-  requests with "a significant impact");
+* It is a minor change [1]_;
 
-* It is a minor change [1]_, regardless of the number of votes;
+* Enough time was given for peer reviews (at least 2 days for "regular"
+  pull requests, and 4 days for pull requests with "a significant impact");
 
 * At least the component's **Merger** or two other Core members voted ``+1``
   and no Core member voted ``-1``.
@@ -141,26 +152,48 @@ discretion of the **Project Leader**.
 .. [1] Minor changes comprise typos, DocBlock fixes, code standards
        violations, and minor CSS, JavaScript and HTML modifications.
 
-.. _BrowserKit: https://github.com/symfony/BrowserKit
-.. _Config: https://github.com/symfony/Config
-.. _Console: https://github.com/symfony/Console
-.. _Debug: https://github.com/symfony/Debug
-.. _DependencyInjection: https://github.com/symfony/DependencyInjection
-.. _DoctrineBridge: https://github.com/symfony/DoctrineBridge
-.. _EventDispatcher: https://github.com/symfony/EventDispatcher
-.. _DomCrawler: https://github.com/symfony/DomCrawler
-.. _Form: https://github.com/symfony/Form
-.. _HttpFoundation: https://github.com/symfony/HttpFoundation
-.. _HttpKernel: https://github.com/symfony/HttpKernel
-.. _Icu: https://github.com/symfony/Icu
-.. _Intl: https://github.com/symfony/Intl
-.. _Locale: https://github.com/symfony/Locale
-.. _MonologBridge: https://github.com/symfony/MonologBridge
-.. _OptionsResolver: https://github.com/symfony/OptionsResolver
-.. _Process: https://github.com/symfony/Process
-.. _PropertyAccess: https://github.com/symfony/PropertyAccess
-.. _Routing: https://github.com/symfony/Routing
-.. _Serializer: https://github.com/symfony/Serializer
-.. _Stopwatch: https://github.com/symfony/Stopwatch
-.. _TwigBridge: https://github.com/symfony/TwigBridge
-.. _Validator: https://github.com/symfony/Validator
+.. _PhpUnitBridge: https://github.com/symfony/phpunit-bridge
+.. _BrowserKit: https://github.com/symfony/browser-kit
+.. _Cache: https://github.com/symfony/cache
+.. _Config: https://github.com/symfony/config
+.. _Console: https://github.com/symfony/console
+.. _Debug: https://github.com/symfony/debug
+.. _DebugBundle: https://github.com/symfony/debug-bundle
+.. _DependencyInjection: https://github.com/symfony/dependency-injection
+.. _DoctrineBridge: https://github.com/symfony/doctrine-bridge
+.. _EventDispatcher: https://github.com/symfony/event-dispatcher
+.. _DomCrawler: https://github.com/symfony/dom-crawler
+.. _Form: https://github.com/symfony/form
+.. _HttpFoundation: https://github.com/symfony/http-foundation
+.. _HttpKernel: https://github.com/symfony/http-kernel
+.. _Icu: https://github.com/symfony/icu
+.. _Intl: https://github.com/symfony/intl
+.. _Locale: https://github.com/symfony/locale
+.. _MonologBridge: https://github.com/symfony/monolog-bridge
+.. _OptionsResolver: https://github.com/symfony/options-resolver
+.. _Process: https://github.com/symfony/process
+.. _PropertyAccess: https://github.com/symfony/property-access
+.. _PropertyInfo: https://github.com/symfony/property-info
+.. _Routing: https://github.com/symfony/routing
+.. _Serializer: https://github.com/symfony/serializer
+.. _Translation: https://github.com/symfony/translation
+.. _Stopwatch: https://github.com/symfony/stopwatch
+.. _TwigBridge: https://github.com/symfony/twig-bridge
+.. _Validator: https://github.com/symfony/validator
+.. _VarDumper: https://github.com/symfony/var-dumper
+.. _Yaml: https://github.com/symfony/yaml
+.. _WebProfilerBundle: https://github.com/symfony/web-profiler-bundle
+.. _`fabpot`: https://github.com/fabpot/
+.. _`webmozart`: https://github.com/webmozart/
+.. _`Tobion`: https://github.com/Tobion/
+.. _`romainneutron`: https://github.com/romainneutron/
+.. _`nicolas-grekas`: https://github.com/nicolas-grekas/
+.. _`stof`: https://github.com/stof/
+.. _`dunglas`: https://github.com/dunglas/
+.. _`jakzal`: https://github.com/jakzal/
+.. _`Seldaek`: https://github.com/Seldaek/
+.. _`lsmith77`: https://github.com/lsmith77/
+.. _`weaverryan`: https://github.com/weaverryan/
+.. _`aitboudad`: https://github.com/aitboudad/
+.. _`xabbuh`: https://github.com/xabbuh/
+.. _`javiereguiluz`: https://github.com/javiereguiluz/

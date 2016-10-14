@@ -49,9 +49,8 @@ to a post record thanks to a foreign key constraint.
 Before diving into the recipe, be sure your database connection parameters are
 correctly setup in the ``app/config/parameters.yml`` file (or wherever your
 database configuration is kept) and that you have initialized a bundle that
-will host your future entity class. In this tutorial it's assumed that
-an ``AcmeBlogBundle`` exists and is located under the ``src/Acme/BlogBundle``
-folder.
+will host your future entity class. In this tutorial it's assumed that an
+AcmeBlogBundle exists and is located under the ``src/Acme/BlogBundle`` folder.
 
 The first step towards building entity classes from an existing database
 is to ask Doctrine to introspect the database and generate the corresponding
@@ -100,10 +99,11 @@ The first command generates entity classes with annotation mappings. But
 if you want to use YAML or XML mapping instead of annotations, you should
 execute the second command only.
 
-.. tip::
+.. caution::
 
-    If you want to use annotations, you can safely delete the XML (or YAML) files
-    after running these two commands.
+    If you want to use annotations, you must remove the XML (or YAML) files
+    after running these two commands. This is necessary as
+    :ref:`it is not possible to mix mapping configuration formats <book-doctrine-adding-mapping>`
 
 For example, the newly created ``BlogComment`` entity class looks as follow::
 

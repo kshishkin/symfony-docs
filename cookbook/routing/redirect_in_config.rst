@@ -17,7 +17,7 @@ Redirecting Using a Path
 
 Assume there is no default controller for the ``/`` path of your application
 and you want to redirect these requests to ``/app``. You will need to use the
-:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\RedirectController::urlRedirect`
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\RedirectController::urlRedirectAction`
 action to redirect to this new url:
 
 .. configuration-block::
@@ -28,7 +28,7 @@ action to redirect to this new url:
 
         # load some routes - one should ultimately have the path "/app"
         AppBundle:
-            resource: "@AcmeAppBundle/Controller/"
+            resource: '@AppBundle/Controller/'
             type:     annotation
             prefix:   /app
 
@@ -50,7 +50,7 @@ action to redirect to this new url:
                 http://symfony.com/schema/routing/routing-1.0.xsd">
 
             <!-- load some routes - one should ultimately have the path "/app" -->
-            <import resource="@AcmeAppBundle/Controller/"
+            <import resource="@AppBundle/Controller/"
                 type="annotation"
                 prefix="/app"
             />
@@ -72,13 +72,10 @@ action to redirect to this new url:
         $collection = new RouteCollection();
 
         // load some routes - one should ultimately have the path "/app"
-        $acmeApp = $loader->import(
-            "@AcmeAppBundle/Controller/",
-            "annotation"
-        );
-        $acmeApp->setPrefix('/app');
+        $appRoutes = $loader->import("@AppBundle/Controller/", "annotation");
+        $appRoutes->setPrefix('/app');
 
-        $collection->addCollection($acmeApp);
+        $collection->addCollection($appRoutes);
 
         // redirecting the root
         $collection->add('root', new Route('/', array(
@@ -100,7 +97,7 @@ Redirecting Using a Route
 Assume you are migrating your website from WordPress to Symfony, you want to
 redirect ``/wp-admin`` to the route ``sonata_admin_dashboard``. You don't know
 the path, only the route name. This can be achieved using the
-:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\RedirectController::redirect`
+:method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\RedirectController::redirectAction`
 action:
 
 .. configuration-block::

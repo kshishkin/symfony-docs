@@ -11,6 +11,9 @@ The ``password`` field renders an input password text box.
 +-------------+------------------------------------------------------------------------+
 | Options     | - `always_empty`_                                                      |
 +-------------+------------------------------------------------------------------------+
+| Overridden  | - `trim`_                                                              |
+| options     |                                                                        |
++-------------+------------------------------------------------------------------------+
 | Inherited   | - `disabled`_                                                          |
 | options     | - `empty_data`_                                                        |
 |             | - `error_bubbling`_                                                    |
@@ -21,7 +24,6 @@ The ``password`` field renders an input password text box.
 |             | - `max_length`_                                                        |
 |             | - `read_only`_                                                         |
 |             | - `required`_                                                          |
-|             | - `trim`_                                                              |
 +-------------+------------------------------------------------------------------------+
 | Parent type | :doc:`text </reference/forms/types/text>`                              |
 +-------------+------------------------------------------------------------------------+
@@ -34,7 +36,7 @@ Field Options
 always_empty
 ~~~~~~~~~~~~
 
-**type**: ``Boolean`` **default**: ``true``
+**type**: ``boolean`` **default**: ``true``
 
 If set to true, the field will *always* render blank, even if the corresponding
 field has a value. When set to false, the password field will be rendered
@@ -44,11 +46,24 @@ Put simply, if for some reason you want to render your password field
 *with* the password value already entered into the box, set this to false
 and submit the form.
 
+Overridden Options
+------------------
+
+trim
+~~~~
+
+**type**: ``boolean`` **default**: ``false``
+
+Unlike the rest of form types, the ``password`` type doesn't apply the
+:phpfunction:`trim` function to the value submitted by the user. This ensures that
+the password is merged back onto the underlying object exactly as it was typed
+by the user.
 
 Inherited Options
 -----------------
 
-These options inherit from the :doc:`form </reference/forms/types/form>` type:
+These options inherit from the :doc:`form </reference/forms/types/form>`
+type:
 
 .. include:: /reference/forms/types/options/disabled.rst.inc
 
@@ -75,5 +90,3 @@ The default value is ``''`` (the empty string).
 .. include:: /reference/forms/types/options/read_only.rst.inc
 
 .. include:: /reference/forms/types/options/required.rst.inc
-
-.. include:: /reference/forms/types/options/trim.rst.inc

@@ -48,6 +48,8 @@ on all types for which ``form`` is the parent type.
 Field Options
 -------------
 
+.. _form-option-action:
+
 .. include:: /reference/forms/types/options/action.rst.inc
 
 .. include:: /reference/forms/types/options/by_reference.rst.inc
@@ -71,10 +73,13 @@ The actual default value of this option depends on other field options:
 * If ``data_class`` is set and ``required`` is ``false``, then ``null``;
 * If ``data_class`` is not set and ``compound`` is ``true``, then ``array()``
   (empty array);
-* If ``data_class`` is not set and ``compound`` is ``false``, then ``''`` (empty string).
+* If ``data_class`` is not set and ``compound`` is ``false``, then ``''``
+  (empty string).
 
 .. include:: /reference/forms/types/options/empty_data.rst.inc
     :start-after: DEFAULT_PLACEHOLDER
+
+.. _reference-form-option-error-bubbling:
 
 .. include:: /reference/forms/types/options/error_bubbling.rst.inc
 
@@ -90,11 +95,15 @@ The actual default value of this option depends on other field options:
 
 .. include:: /reference/forms/types/options/label_attr.rst.inc
 
+.. _reference-form-option-mapped:
+
 .. include:: /reference/forms/types/options/mapped.rst.inc
 
 .. _reference-form-option-max_length:
 
 .. include:: /reference/forms/types/options/max_length.rst.inc
+
+.. _form-option-method:
 
 .. include:: /reference/forms/types/options/method.rst.inc
 

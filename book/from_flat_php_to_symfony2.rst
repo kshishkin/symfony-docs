@@ -29,10 +29,9 @@ persisted to the database. Writing in flat PHP is quick and dirty:
 
     <?php
     // index.php
-    $link = mysql_connect('localhost', 'myuser', 'mypassword');
-    mysql_select_db('blog_db', $link);
+    $link = new PDO("mysql:host=localhost;dbname=blog_db", 'myuser', 'mypassword');
 
-    $result = mysql_query('SELECT id, title FROM post', $link);
+    $result = $link->query('SELECT id, title FROM post');
     ?>
 
     <!DOCTYPE html>
@@ -43,19 +42,19 @@ persisted to the database. Writing in flat PHP is quick and dirty:
         <body>
             <h1>List of Posts</h1>
             <ul>
-                <?php while ($row = mysql_fetch_assoc($result)): ?>
+                <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
                 <li>
                     <a href="/show.php?id=<?php echo $row['id'] ?>">
                         <?php echo $row['title'] ?>
                     </a>
                 </li>
-                <?php endwhile; ?>
+                <?php endwhile ?>
             </ul>
         </body>
     </html>
 
     <?php
-    mysql_close($link);
+    $link = null;
     ?>
 
 That's quick to write, fast to execute, and, as your app grows, impossible
@@ -81,26 +80,23 @@ Isolating the Presentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The code can immediately gain from separating the application "logic" from
-the code that prepares the HTML "presentation":
+the code that prepares the HTML "presentation"::
 
-.. code-block:: html+php
-
-    <?php
     // index.php
-    $link = mysql_connect('localhost', 'myuser', 'mypassword');
-    mysql_select_db('blog_db', $link);
+    $link = new PDO("mysql:host=localhost;dbname=blog_db", 'myuser', 'mypassword');
 
-    $result = mysql_query('SELECT id, title FROM post', $link);
+    $result = $link->query('SELECT id, title FROM post');
 
     $posts = array();
-    while ($row = mysql_fetch_assoc($result)) {
+    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
         $posts[] = $row;
     }
 
-    mysql_close($link);
+    $link = null;
 
     // include the HTML presentation code
     require 'templates/list.php';
+
 
 The HTML code is now stored in a separate file (``templates/list.php``), which
 is primarily an HTML file that uses a template-like PHP syntax:
@@ -117,16 +113,16 @@ is primarily an HTML file that uses a template-like PHP syntax:
             <ul>
                 <?php foreach ($posts as $post): ?>
                 <li>
-                    <a href="/read?id=<?php echo $post['id'] ?>">
+                    <a href="/show.php?id=<?php echo $post['id'] ?>">
                         <?php echo $post['title'] ?>
                     </a>
                 </li>
-                <?php endforeach; ?>
+                <?php endforeach ?>
             </ul>
         </body>
     </html>
 
-By convention, the file that contains all of the application logic - ``index.php`` -
+By convention, the file that contains all the application logic - ``index.php`` -
 is known as a "controller". The term :term:`controller` is a word you'll hear
 a lot, regardless of the language or framework you use. It refers simply
 to the area of *your* code that processes user input and prepares the response.
@@ -142,32 +138,29 @@ Isolating the Application (Domain) Logic
 So far the application contains only one page. But what if a second page
 needed to use the same database connection, or even the same array of blog
 posts? Refactor the code so that the core behavior and data-access functions
-of the application are isolated in a new file called ``model.php``:
+of the application are isolated in a new file called ``model.php``::
 
-.. code-block:: html+php
-
-    <?php
     // model.php
     function open_database_connection()
     {
-        $link = mysql_connect('localhost', 'myuser', 'mypassword');
-        mysql_select_db('blog_db', $link);
+        $link = new PDO("mysql:host=localhost;dbname=blog_db", 'myuser', 'mypassword');
 
         return $link;
     }
 
-    function close_database_connection($link)
+    function close_database_connection(&$link)
     {
-        mysql_close($link);
+        $link = null;
     }
 
     function get_all_posts()
     {
         $link = open_database_connection();
 
-        $result = mysql_query('SELECT id, title FROM post', $link);
+        $result = $link->query('SELECT id, title FROM post');
+
         $posts = array();
-        while ($row = mysql_fetch_assoc($result)) {
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
             $posts[] = $row;
         }
         close_database_connection($link);
@@ -184,11 +177,8 @@ of the application are isolated in a new file called ``model.php``:
    in this example, only a portion (or none) of the model is actually concerned
    with accessing a database.
 
-The controller (``index.php``) is now very simple:
+The controller (``index.php``) is now very simple::
 
-.. code-block:: html+php
-
-    <?php
     require_once 'model.php';
 
     $posts = get_all_posts();
@@ -234,18 +224,18 @@ the layout:
         <ul>
             <?php foreach ($posts as $post): ?>
             <li>
-                <a href="/read?id=<?php echo $post['id'] ?>">
+                <a href="/show.php?id=<?php echo $post['id'] ?>">
                     <?php echo $post['title'] ?>
                 </a>
             </li>
-            <?php endforeach; ?>
+            <?php endforeach ?>
         </ul>
     <?php $content = ob_get_clean() ?>
 
     <?php include 'layout.php' ?>
 
-You've now introduced a methodology that allows for the reuse of the
-layout. Unfortunately, to accomplish this, you're forced to use a few ugly
+You now have a setup that will allow you to reuse the layout.
+Unfortunately, to accomplish this, you're forced to use a few ugly
 PHP functions (``ob_start()``, ``ob_get_clean()``) in the template. Symfony
 uses a Templating component that allows this to be accomplished cleanly
 and easily. You'll see it in action shortly.
@@ -264,11 +254,9 @@ an individual blog result based on a given id::
     function get_post_by_id($id)
     {
         $link = open_database_connection();
-
         $id = intval($id);
-        $query = 'SELECT date, title, body FROM post WHERE id = '.$id;
-        $result = mysql_query($query);
-        $row = mysql_fetch_assoc($result);
+        $result = $link->query('SELECT created_at, title, body FROM post WHERE id = '.$id);
+        $row = $result->fetch(PDO::FETCH_ASSOC);
 
         close_database_connection($link);
 
@@ -276,11 +264,8 @@ an individual blog result based on a given id::
     }
 
 Next, create a new file called ``show.php`` - the controller for this new
-page:
+page::
 
-.. code-block:: html+php
-
-    <?php
     require_once 'model.php';
 
     $post = get_post_by_id($_GET['id']);
@@ -297,7 +282,7 @@ the individual blog post:
     <?php ob_start() ?>
         <h1><?php echo $post['title'] ?></h1>
 
-        <div class="date"><?php echo $post['date'] ?></div>
+        <div class="date"><?php echo $post['created_at'] ?></div>
         <div class="body">
             <?php echo $post['body'] ?>
         </div>
@@ -319,6 +304,8 @@ an additional file or perform some other global task (e.g. enforce security)?
 As it stands now, that code would need to be added to every controller file.
 If you forget to include something in one file, hopefully it doesn't relate
 to security...
+
+.. _book-from_flat_php-front-controller:
 
 A "Front Controller" to the Rescue
 ----------------------------------
@@ -355,11 +342,8 @@ You're about to take a **big** step with the application. With one file handling
 all requests, you can centralize things such as security handling, configuration
 loading, and routing. In this application, ``index.php`` must now be smart
 enough to render the blog post list page *or* the blog post show page based
-on the requested URI:
+on the requested URI::
 
-.. code-block:: html+php
-
-    <?php
     // index.php
 
     // load and initialize any global libraries
@@ -367,20 +351,18 @@ on the requested URI:
     require_once 'controllers.php';
 
     // route the request internally
-    $uri = $_SERVER['REQUEST_URI'];
-    if ('/index.php' == $uri) {
+    $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    if ('/index.php' === $uri) {
         list_action();
-    } elseif ('/index.php/show' == $uri && isset($_GET['id'])) {
+    } elseif ('/index.php/show' === $uri && isset($_GET['id'])) {
         show_action($_GET['id']);
     } else {
-        header('Status: 404 Not Found');
+        header('HTTP/1.1 404 Not Found');
         echo '<html><body><h1>Page Not Found</h1></body></html>';
     }
 
 For organization, both controllers (formerly ``index.php`` and ``show.php``)
-are now PHP functions and each has been moved into a separate file, ``controllers.php``:
-
-.. code-block:: php
+are now PHP functions and each has been moved into a separate file, ``controllers.php``::
 
     function list_action()
     {
@@ -447,7 +429,7 @@ into a vendor/ directory:
 
 .. code-block:: bash
 
-    $ php composer.phar install
+    $ composer install
 
 Beside downloading your dependencies, Composer generates a ``vendor/autoload.php`` file,
 which takes care of autoloading for all the files in the Symfony Framework as well as
@@ -458,11 +440,8 @@ to interpret each request and return a response. To this end, Symfony provides
 both a :class:`Symfony\\Component\\HttpFoundation\\Request` and a
 :class:`Symfony\\Component\\HttpFoundation\\Response` class. These classes are
 object-oriented representations of the raw HTTP request being processed and
-the HTTP response being returned. Use them to improve the blog:
+the HTTP response being returned. Use them to improve the blog::
 
-.. code-block:: html+php
-
-    <?php
     // index.php
     require_once 'vendor/autoload.php';
 
@@ -472,9 +451,9 @@ the HTTP response being returned. Use them to improve the blog:
     $request = Request::createFromGlobals();
 
     $uri = $request->getPathInfo();
-    if ('/' == $uri) {
+    if ('/' === $uri) {
         $response = list_action();
-    } elseif ('/show' == $uri && $request->query->has('id')) {
+    } elseif ('/show' === $uri && $request->query->has('id')) {
         $response = show_action($request->query->get('id'));
     } else {
         $html = '<html><body><h1>Page Not Found</h1></body></html>';
@@ -486,9 +465,7 @@ the HTTP response being returned. Use them to improve the blog:
 
 The controllers are now responsible for returning a ``Response`` object.
 To make this easier, you can add a new ``render_template()`` function, which,
-incidentally, acts quite a bit like the Symfony templating engine:
-
-.. code-block:: php
+incidentally, acts quite a bit like the Symfony templating engine::
 
     // controllers.php
     use Symfony\Component\HttpFoundation\Response;
@@ -547,8 +524,8 @@ from scratch, you could at least use Symfony's standalone `Routing`_ and
 Instead of re-solving common problems, you can let Symfony take care of
 them for you. Here's the same sample application, now built in Symfony::
 
-    // src/Acme/BlogBundle/Controller/BlogController.php
-    namespace Acme\BlogBundle\Controller;
+    // src/AppBundle/Controller/BlogController.php
+    namespace AppBundle\Controller;
 
     use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -558,20 +535,17 @@ them for you. Here's the same sample application, now built in Symfony::
         {
             $posts = $this->get('doctrine')
                 ->getManager()
-                ->createQuery('SELECT p FROM AcmeBlogBundle:Post p')
+                ->createQuery('SELECT p FROM AppBundle:Post p')
                 ->execute();
 
-            return $this->render(
-                'AcmeBlogBundle:Blog:list.html.php',
-                array('posts' => $posts)
-            );
+            return $this->render('Blog/list.html.php', array('posts' => $posts));
         }
 
         public function showAction($id)
         {
             $post = $this->get('doctrine')
                 ->getManager()
-                ->getRepository('AcmeBlogBundle:Post')
+                ->getRepository('AppBundle:Post')
                 ->find($id);
 
             if (!$post) {
@@ -579,22 +553,19 @@ them for you. Here's the same sample application, now built in Symfony::
                 throw $this->createNotFoundException();
             }
 
-            return $this->render(
-                'AcmeBlogBundle:Blog:show.html.php',
-                array('post' => $post)
-            );
+            return $this->render('Blog/show.html.php', array('post' => $post));
         }
     }
 
-The two controllers are still lightweight. Each uses the :doc:`Doctrine ORM library </book/doctrine>`
-to retrieve objects from the database and the Templating component to
-render a template and return a ``Response`` object. The list template is
-now quite a bit simpler:
+The two controllers are still lightweight. Each uses the
+:doc:`Doctrine ORM library </book/doctrine>` to retrieve objects from the
+database and the Templating component to render a template and return a
+``Response`` object. The list template is now quite a bit simpler:
 
 .. code-block:: html+php
 
-    <!-- src/Acme/BlogBundle/Resources/views/Blog/list.html.php -->
-    <?php $view->extend('::layout.html.php') ?>
+    <!-- app/Resources/views/Blog/list.html.php -->
+    <?php $view->extend('layout.html.php') ?>
 
     <?php $view['slots']->set('title', 'List of Posts') ?>
 
@@ -609,7 +580,7 @@ now quite a bit simpler:
                 <?php echo $post->getTitle() ?>
             </a>
         </li>
-        <?php endforeach; ?>
+        <?php endforeach ?>
     </ul>
 
 The layout is nearly identical:
@@ -644,15 +615,15 @@ A routing configuration map provides this information in a readable format:
     # app/config/routing.yml
     blog_list:
         path:     /blog
-        defaults: { _controller: AcmeBlogBundle:Blog:list }
+        defaults: { _controller: AppBundle:Blog:list }
 
     blog_show:
         path:     /blog/show/{id}
-        defaults: { _controller: AcmeBlogBundle:Blog:show }
+        defaults: { _controller: AppBundle:Blog:show }
 
 Now that Symfony is handling all the mundane tasks, the front controller
 is dead simple. And since it does so little, you'll never have to touch
-it once it's created (and if you use a Symfony distribution, you won't
+it once it's created (and if you use a `Symfony distribution`_, you won't
 even need to create it!)::
 
     // web/app.php
@@ -687,7 +658,7 @@ at how migrating the blog from flat PHP to Symfony has improved life:
   allows for new developers to be productive in your project more quickly;
 
 * 100% of the code you write is for *your* application. You **don't need
-  to develop or maintain low-level utilities** such as :ref:`autoloading <autoloading-introduction-sidebar>`,
+  to develop or maintain low-level utilities** such as autoloading,
   :doc:`routing </book/routing>`, or rendering :doc:`controllers </book/controller>`;
 
 * Symfony gives you **access to open source tools** such as Doctrine and the
@@ -714,10 +685,10 @@ called `Twig`_ that makes templates faster to write and easier to read.
 It means that the sample application could contain even less code! Take,
 for example, the list template written in Twig:
 
-.. code-block:: html+jinja
+.. code-block:: html+twig
 
-    {# src/Acme/BlogBundle/Resources/views/Blog/list.html.twig #}
-    {% extends "::layout.html.twig" %}
+    {# app/Resources/views/blog/list.html.twig #}
+    {% extends "layout.html.twig" %}
 
     {% block title %}List of Posts{% endblock %}
 
@@ -736,7 +707,7 @@ for example, the list template written in Twig:
 
 The corresponding ``layout.html.twig`` template is also easier to write:
 
-.. code-block:: html+jinja
+.. code-block:: html+twig
 
     {# app/Resources/views/layout.html.twig #}
     <!DOCTYPE html>
@@ -760,10 +731,11 @@ Learn more from the Cookbook
 * :doc:`/cookbook/controller/service`
 
 .. _`Doctrine`: http://www.doctrine-project.org
-.. _`download Composer`: http://getcomposer.org/download/
-.. _`Routing`: https://github.com/symfony/Routing
-.. _`Templating`: https://github.com/symfony/Templating
+.. _`download Composer`: https://getcomposer.org/download/
+.. _`Routing`: https://github.com/symfony/routing
+.. _`Templating`: https://github.com/symfony/templating
 .. _`KnpBundles.com`: http://knpbundles.com/
 .. _`Twig`: http://twig.sensiolabs.org
 .. _`Varnish`: https://www.varnish-cache.org/
 .. _`PHPUnit`: http://www.phpunit.de
+.. _`Symfony distribution`: https://github.com/symfony/symfony-standard

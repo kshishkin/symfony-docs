@@ -22,8 +22,8 @@ Installation
 
 You can install the component in two different ways:
 
-* Using the official Git repository (https://github.com/symfony/Intl);
-* :doc:`Install it via Composer</components/using_components>` (``symfony/intl`` on `Packagist`_).
+* :doc:`Install it via Composer</components/using_components>` (``symfony/intl`` on `Packagist`_);
+* Using the official Git repository (https://github.com/symfony/intl).
 
 If you install the component via Composer, the following classes and functions
 of the intl extension will be automatically provided if the intl extension is
@@ -62,6 +62,11 @@ code::
 
 .. sidebar:: ICU and Deployment Problems
 
+    .. note::
+
+        These deployment problems only affect the following Symfony versions:
+        2.3.0 to 2.3.20 versions, any 2.4.x version and 2.5.0 to 2.5.5 versions.
+
     The intl extension internally uses the `ICU library`_ to obtain localization
     data such as number formats in different languages, country names and more.
     To make this data accessible to userland PHP libraries, Symfony ships a copy
@@ -85,13 +90,13 @@ code::
       the server.
 
     For example, consider that your development machines ship ICU 4.8 and the server
-    ICU 4.2. When you run ``php composer.phar update`` on the development machine, version
+    ICU 4.2. When you run ``composer update`` on the development machine, version
     1.2.* of the Icu component will be installed. But after deploying the
-    application, ``php composer.phar install`` will fail with the following error:
+    application, ``composer install`` will fail with the following error:
 
     .. code-block:: bash
 
-        $ php composer.phar install
+        $ composer install
         Loading composer repositories with package information
         Installing dependencies from lock file
         Your requirements could not be resolved to an installable set of packages.
@@ -104,8 +109,8 @@ code::
     The error tells you that the requested version of the Icu component, version
     1.2, is not compatible with PHP's ICU version 4.2.
 
-    One solution to this problem is to run ``php composer.phar update`` instead of
-    ``php composer.phar install``. It is highly recommended **not** to do this. The
+    One solution to this problem is to run ``composer update`` instead of
+    ``composer install``. It is highly recommended **not** to do this. The
     ``update`` command will install the latest versions of each Composer dependency
     to your production server and potentially break the application.
 
@@ -121,8 +126,10 @@ code::
 
     .. code-block:: json
 
-        "require: {
-            "symfony/icu": "1.1.*"
+        {
+            "require": {
+                "symfony/icu": "1.1.*"
+            }
         }
 
     Set the version to
@@ -130,7 +137,7 @@ code::
     * "1.0.*" if the server does not have the intl extension installed;
     * "1.1.*" if the server is compiled with ICU 4.2 or lower.
 
-    Finally, run ``php composer.phar update symfony/icu`` on your development machine, test
+    Finally, run ``composer update symfony/icu`` on your development machine, test
     extensively and deploy again. The installation of the dependencies will now
     succeed.
 
@@ -212,7 +219,7 @@ This class currently only works with the `intl extension`_ installed::
     $reader = new BinaryBundleReader();
     $data = $reader->read('/path/to/bundle', 'en');
 
-    echo $data['Data']['entry1'];
+    var_dump($data['Data']['entry1']);
 
 PhpBundleReader
 ~~~~~~~~~~~~~~~
@@ -226,7 +233,7 @@ object::
     $reader = new PhpBundleReader();
     $data = $reader->read('/path/to/bundle', 'en');
 
-    echo $data['Data']['entry1'];
+    var_dump($data['Data']['entry1']);
 
 BufferedBundleReader
 ~~~~~~~~~~~~~~~~~~~~
@@ -267,10 +274,10 @@ returned::
     $data = $reader->read('/path/to/bundle', 'en');
 
     // Produces an error if the key "Data" does not exist
-    echo $data['Data']['entry1'];
+    var_dump($data['Data']['entry1']);
 
     // Returns null if the key "Data" does not exist
-    echo $reader->readEntry('/path/to/bundle', 'en', array('Data', 'entry1'));
+    var_dump($reader->readEntry('/path/to/bundle', 'en', array('Data', 'entry1')));
 
 Additionally, the
 :method:`Symfony\\Component\\Intl\\ResourceBundle\\Reader\\StructuredBundleReaderInterface::readEntry`
@@ -281,12 +288,12 @@ multi-valued entries (arrays), the values of the more specific and the fallback
 locale will be merged. In order to suppress this behavior, the last parameter
 ``$fallback`` can be set to ``false``::
 
-    echo $reader->readEntry(
+    var_dump($reader->readEntry(
         '/path/to/bundle',
         'en',
         array('Data', 'entry1'),
         false
-    );
+    ));
 
 Accessing ICU Data
 ------------------

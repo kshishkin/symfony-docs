@@ -4,9 +4,9 @@ CardScheme
 .. versionadded:: 2.2
     The ``CardScheme`` constraint was introduced in Symfony 2.2.
 
-This constraint ensures that a credit card number is valid for a given credit card
-company. It can be used to validate the number before trying to initiate a payment
-through a payment gateway.
+This constraint ensures that a credit card number is valid for a given credit
+card company. It can be used to validate the number before trying to initiate
+a payment through a payment gateway.
 
 +----------------+--------------------------------------------------------------------------+
 | Applies to     | :ref:`property or method <validation-property-target>`                   |
@@ -27,10 +27,28 @@ on an object that will contain a credit card number.
 
 .. configuration-block::
 
+    .. code-block:: php-annotations
+
+        // src/AppBundle/Entity/Transaction.php
+        namespace AppBundle\Entity\Transaction;
+
+        use Symfony\Component\Validator\Constraints as Assert;
+
+        class Transaction
+        {
+            /**
+             * @Assert\CardScheme(
+             *     schemes={"VISA"},
+             *     message="Your credit card number is invalid."
+             * )
+             */
+            protected $cardNumber;
+        }
+
     .. code-block:: yaml
 
-        # src/Acme/SubscriptionBundle/Resources/config/validation.yml
-        Acme\SubscriptionBundle\Entity\Transaction:
+        # src/AppBundle/Resources/config/validation.yml
+        AppBundle\Entity\Transaction:
             properties:
                 cardNumber:
                     - CardScheme:
@@ -39,13 +57,13 @@ on an object that will contain a credit card number.
 
     .. code-block:: xml
 
-        <!-- src/Acme/SubscriptionBundle/Resources/config/validation.xml -->
+        <!-- src/AppBundle/Resources/config/validation.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
-            <class name="Acme\SubscriptionBundle\Entity\Transaction">
+            <class name="AppBundle\Entity\Transaction">
                 <property name="cardNumber">
                     <constraint name="CardScheme">
                         <option name="schemes">
@@ -57,25 +75,10 @@ on an object that will contain a credit card number.
             </class>
         </constraint-mapping>
 
-    .. code-block:: php-annotations
-
-        // src/Acme/SubscriptionBundle/Entity/Transaction.php
-        namespace Acme\SubscriptionBundle\Entity\Transaction;
-
-        use Symfony\Component\Validator\Constraints as Assert;
-
-        class Transaction
-        {
-            /**
-             * @Assert\CardScheme(schemes = {"VISA"}, message = "Your credit card number is invalid.")
-             */
-            protected $cardNumber;
-        }
-
     .. code-block:: php
 
-        // src/Acme/SubscriptionBundle/Entity/Transaction.php
-        namespace Acme\SubscriptionBundle\Entity\Transaction;
+        // src/AppBundle/Entity/Transaction.php
+        namespace AppBundle\Entity\Transaction;
 
         use Symfony\Component\Validator\Mapping\ClassMetadata;
         use Symfony\Component\Validator\Constraints as Assert;
@@ -103,9 +106,9 @@ schemes
 
 **type**: ``mixed`` [:ref:`default option <validation-default-option>`]
 
-This option is required and represents the name of the number scheme used to
-validate the credit card number, it can either be a string or an array. Valid
-values are:
+This option is required and represents the name of the number scheme used
+to validate the credit card number, it can either be a string or an array.
+Valid values are:
 
 * ``AMEX``
 * ``CHINA_UNIONPAY``
@@ -118,7 +121,8 @@ values are:
 * ``MASTERCARD``
 * ``VISA``
 
-For more information about the used schemes, see `Wikipedia: Issuer identification number (IIN)`_.
+For more information about the used schemes, see
+`Wikipedia: Issuer identification number (IIN)`_.
 
 message
 ~~~~~~~
@@ -127,4 +131,4 @@ message
 
 The message shown when the value does not pass the ``CardScheme`` check.
 
-.. _`Wikipedia: Issuer identification number (IIN)`: http://en.wikipedia.org/wiki/Bank_card_number#Issuer_identification_number_.28IIN.29
+.. _`Wikipedia: Issuer identification number (IIN)`: https://en.wikipedia.org/wiki/Bank_card_number#Issuer_identification_number_.28IIN.29
